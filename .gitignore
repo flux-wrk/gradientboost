@@ -1,3 +1,15 @@
+# IDE/editors configs and projects:
+*.sublime-*
+.idea/
+.vscode/
+.vs/
+
+# Compilation stuff
+build/*
+cmake-build-*/
+Debug/
+Release/
+
 # Prerequisites
 *.d
 
