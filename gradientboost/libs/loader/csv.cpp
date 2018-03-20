@@ -8,8 +8,8 @@
 
 namespace NGradientBoost {
 
-std::vector<std::vector<float_t>> ReadCSV(std::istream& stream, char separator, bool skip_header) {
-    std::vector<std::vector<float_t>> result = {};
+std::vector<std::vector<std::string>> ReadCSV(std::istream& stream, char separator, bool skip_header) {
+    std::vector<std::vector<std::string>> result = {};
 
     std::string current_line;
     while (std::getline(stream, current_line)) {
@@ -17,19 +17,14 @@ std::vector<std::vector<float_t>> ReadCSV(std::istream& stream, char separator, 
             skip_header = false;
             continue;
         }
-        std::cout << current_line << std::endl;
 
         std::stringstream lineStream(current_line);
         std::string cell;
-        std::vector<float_t> current_vector;
+        std::vector<std::string> current_vector;
 
+        // TODO: handle escape codes
         while (std::getline(lineStream, cell, separator)) {
-            try {
-                current_vector.push_back(std::stof(cell));
-            } catch (const std::exception&) {
-                // TODO: handle exception
-                std::cout << cell << std::endl;
-            }
+            current_vector.push_back(cell);
         }
         result.push_back(current_vector);
     }
@@ -37,7 +32,7 @@ std::vector<std::vector<float_t>> ReadCSV(std::istream& stream, char separator, 
     return result;
 }
 
-std::vector<std::vector<float_t>> ReadCSV(const std::string& file, char separator, bool skip_header) {
+std::vector<std::vector<std::string>> ReadCSV(const std::string& file, char separator, bool skip_header) {
     std::ifstream stream(file);
     if (!stream.good()) {
         throw std::ifstream::failure("IO error while reading csv (" + file + ").");

@@ -15,7 +15,7 @@ int main() {
     });
 
     const auto dataframe = NGradientBoost::ReadCSV("data/training.csv");
-    std::cout << dataframe.size() << std::endl;
+    std::cout << "Readed " << dataframe.size() << " row(s)" << std::endl;
 
     return 0;
 }
