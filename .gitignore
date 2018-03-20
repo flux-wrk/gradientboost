@@ -42,3 +42,6 @@ Release/
 *.exe
 *.out
 *.app
+
+# ycmd
+.ycm_extra_conf.py

@@ -1,16 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
-set(CMAKE_CXX_STANDARD 14)
+add_subdirectory(libs)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-march=native -flto -O3")
-endif()
+# include_directories(libs/decision_tree)
+include_directories(libs/loader)
 
-include_directories(.)
+add_executable(gradientboost
+    ${pir_ml_headers}
+    main.cpp)
 
-file(GLOB headers
-        "*.hpp"
-        "*.h"
-)
-
-add_executable(gradientboost ${pir_ml_headers} main.cpp)
-target_link_libraries(gradientboost tbb)
+target_link_libraries(gradientboost
+    loader
+    tbb)
