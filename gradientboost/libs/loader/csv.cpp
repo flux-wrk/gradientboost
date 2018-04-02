@@ -12,6 +12,7 @@ std::vector<std::vector<std::string>> ReadCSV(std::istream& stream, char separat
     std::vector<std::vector<std::string>> result = {};
 
     std::string current_line;
+    size_t last_vector_size = 0;
     while (std::getline(stream, current_line)) {
         if (skip_header) {
             skip_header = false;
@@ -21,11 +22,13 @@ std::vector<std::vector<std::string>> ReadCSV(std::istream& stream, char separat
         std::stringstream lineStream(current_line);
         std::string cell;
         std::vector<std::string> current_vector;
+        current_vector.reserve(last_vector_size);
 
         // TODO: handle escape codes
         while (std::getline(lineStream, cell, separator)) {
             current_vector.push_back(cell);
         }
+        last_vector_size = current_vector.size();
         result.push_back(current_vector);
     }
 
