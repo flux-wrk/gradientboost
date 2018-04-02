@@ -1,4 +1,5 @@
 #include "libs/loader/csv.h"
+#include "libs/preprocessing/preprocessor.h"
 
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_do.h>
@@ -14,8 +15,21 @@ int main() {
         mutex.unlock();
     });
 
+
     const auto dataframe = NGradientBoost::ReadCSV("data/training.csv");
+    size_t dim = dataframe[0].size() - 1;
     std::cout << "Readed " << dataframe.size() << " row(s)" << std::endl;
+
+
+    std::vector<float_t> res;
+    NGradientBoost::OneHotEncoder<std::string> encoder;
+    encoder.fit(dataframe, dim).fit(dataframe, dim);
+
+    for(const auto& vec: dataframe) {
+        std::cout << vec[dim] << " : ";
+        std::cout << std::endl;
+    }
+
 
     return 0;
 }
