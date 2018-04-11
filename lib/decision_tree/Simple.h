@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Classifier.h"
+#include "Classifier.hpp"
 #include "Tree.h"
 
 #include "lib/preprocessing/DataFrame.h"
