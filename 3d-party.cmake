@@ -1,4 +1,0 @@
-set(3DPARTY_DIR "${CMAKE_CURRENT_LIST_DIR}/3d-party")
-set(3DPARTY_CMAKE_FILE "${3DPARTY_DIR}/Catch.cmake")
-
-include(${3DPARTY_CMAKE_FILE})
