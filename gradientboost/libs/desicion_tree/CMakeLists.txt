@@ -1,6 +1,6 @@
 aux_source_directory(. desicion_tree_SRC)
 
-add_library(desicion_tree STATIC
+add_library(desicion_tree SHARED
     ${desicion_tree_SRC})
 
 target_link_libraries(desicion_tree

@@ -1,4 +1,4 @@
-#include "csv.h"
+#include "CSV.h"
 
 #include <iostream>
 #include <fstream>
@@ -12,6 +12,7 @@ std::vector<std::vector<std::string>> ReadCSV(std::istream& stream, char separat
     std::vector<std::vector<std::string>> result = {};
 
     std::string current_line;
+    size_t last_vector_size = 0;
     while (std::getline(stream, current_line)) {
         if (skip_header) {
             skip_header = false;
@@ -21,12 +22,14 @@ std::vector<std::vector<std::string>> ReadCSV(std::istream& stream, char separat
         std::stringstream lineStream(current_line);
         std::string cell;
         std::vector<std::string> current_vector;
+        current_vector.reserve(last_vector_size);
 
         // TODO: handle escape codes
         while (std::getline(lineStream, cell, separator)) {
             current_vector.push_back(cell);
         }
-        result.push_back(current_vector);
+        last_vector_size = current_vector.size();
+        result.emplace_back(current_vector);
     }
 
     return result;
@@ -42,4 +45,3 @@ std::vector<std::vector<std::string>> ReadCSV(const std::string& file, char sepa
 }
 
 } // namespace NGradientBoost
-
