@@ -11,5 +11,5 @@ add_subdirectory(3d-party)
 
 # library itself
 add_subdirectory(gradientboost)
-
-# string(REPLACE " -Werror" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+add_subdirectory(lib)
+add_subdirectory(tests)
