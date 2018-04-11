@@ -8,8 +8,8 @@
 
 namespace NGradientBoost {
 
-std::vector<std::vector<std::string>> ReadCSV(std::istream& stream, char separator, bool skip_header) {
-    std::vector<std::vector<std::string>> result = {};
+std::vector<StringVector> ReadCSV(std::istream& stream, char separator, bool skip_header) {
+    std::vector<StringVector> result;
 
     std::string current_line;
     size_t last_vector_size = 0;
@@ -45,3 +45,4 @@ std::vector<std::vector<std::string>> ReadCSV(const std::string& file, char sepa
 }
 
 } // namespace NGradientBoost
+

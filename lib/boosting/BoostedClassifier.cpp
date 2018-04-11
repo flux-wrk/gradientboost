@@ -1,17 +1,19 @@
 #include "BoostedClassifier.h"
 
-NGradientBoost::BoostedClassifier::DecisionTree::DecisionTree(size_t depth) : depth_(depth) {
+namespace NGradientBoost {
+
+BoostedClassifier::DecisionTree::DecisionTree(size_t depth) : depth_(depth) {
     splitting_features_ = std::vector<size_t>();
     leaf_answers_ = std::vector<float_t>(static_cast<unsigned long>(1 << (depth_ + 1)), 0.0);
 }
 
 std::vector<float_t>
-NGradientBoost::BoostedClassifier::DecisionTree::Predict(const std::vector<std::vector<float_t>> &data) const {
+BoostedClassifier::DecisionTree::Predict(const std::vector<std::vector<float_t>> &data) const {
     auto dataframe = DataFrame(data);
     std::vector<float_t> res(dataframe.size());
-    for (int i = 0; i < dataframe.size(); ++i) {
+    for (size_t i = 0; i < dataframe.size(); ++i) {
         size_t mask = 0;
-        for (int j = 0; j < depth_; ++j) {
+        for (size_t j = 0; j < depth_; ++j) {
             mask += (dataframe[i][splitting_features_[j]] << (depth_ - j));
         }
         res[i] = leaf_answers_[mask];
@@ -19,8 +21,8 @@ NGradientBoost::BoostedClassifier::DecisionTree::Predict(const std::vector<std::
     return res;
 }
 
-NGradientBoost::BoostedClassifier &
-NGradientBoost::BoostedClassifier::Fit(const std::vector<std::vector<float_t>> &data, const std::vector<float_t> target) {
+BoostedClassifier &
+BoostedClassifier::Fit(const std::vector<std::vector<float_t>>& data, const std::vector<float_t> target) {
     auto dataframe = DataFrame(data);
     trees_.clear();
     std::vector<float_t> current_predictions(dataframe.size(), 0), temp_pred(dataframe.size(), 0);
@@ -41,11 +43,11 @@ NGradientBoost::BoostedClassifier::Fit(const std::vector<std::vector<float_t>> &
             for (size_t feature_index = 0; feature_index < dataframe.features_count(); ++feature_index) {
                 std::vector<float_t> leaf_sum(static_cast<unsigned long>(1 << (depth + 1)), 0.0);
                 std::vector<int> leaf_count(1 << (depth + 1), 0);
-                float_t this_mse = 0.0, this_true_mse = 0.0;
+                float_t this_mse = 0.0;
                 if (used_features.count(feature_index / dataframe.get_bin_count()) > 0) {
                     continue;
                 }
-                for (int i = 0; i < dataframe.size(); ++i) {
+                for (size_t i = 0; i < dataframe.size(); ++i) {
                     temp_leaf_ind[i] = leaf_indices[i] * 2 + dataframe[i][feature_index];
                     leaf_sum[temp_leaf_ind[i]] += target[i] - current_predictions[i];
                     ++leaf_count[temp_leaf_ind[i]];
@@ -94,14 +96,17 @@ NGradientBoost::BoostedClassifier::Fit(const std::vector<std::vector<float_t>> &
     return *this;
 }
 
-std::vector<float_t> NGradientBoost::BoostedClassifier::Predict(const std::vector<std::vector<float_t>> &data) const {
+std::vector<float_t> BoostedClassifier::Predict(const std::vector<std::vector<float_t>> &data) const {
     auto dataframe = DataFrame(data);
     std::vector<float_t> predictions(dataframe.size());
     for (const DecisionTree &weak_clf : trees_) {
         std::vector<float_t> predictions_for_tree = weak_clf.Predict(data);
-        for (int i = 0; i < predictions.size(); ++i) {
+        for (size_t i = 0; i < predictions.size(); ++i) {
             predictions[i] += predictions_for_tree[i];
         }
     }
     return predictions;
 }
+
+} // namespace NGradientBoost
+
