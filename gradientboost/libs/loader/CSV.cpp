@@ -1,4 +1,4 @@
-#include "csv.h"
+#include "CSV.h"
 
 #include <iostream>
 #include <fstream>
@@ -29,7 +29,7 @@ std::vector<std::vector<std::string>> ReadCSV(std::istream& stream, char separat
             current_vector.push_back(cell);
         }
         last_vector_size = current_vector.size();
-        result.push_back(current_vector);
+        result.emplace_back(current_vector);
     }
 
     return result;
