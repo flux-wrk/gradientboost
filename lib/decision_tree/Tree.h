@@ -8,6 +8,10 @@ public:
         : leaf_count_(leaf_count)
     { }
 
+    int GetLeafCount() {
+        return leaf_count_;
+    }
+
 private:
     int leaf_count_;
 };
