@@ -4,12 +4,14 @@ cmake_minimum_required(VERSION 3.5)
 
 project(gradientboost)
 
-include(CMakeConfig.txt)
+include(cmake/CMakeConfig.txt)
 
 # 3D-Party
-add_subdirectory(3d-party)
+set(3D_PARTY_DIR ${CMAKE_SOURCE_DIR}/3d-party)
+include(cmake/gtest.cmake)
+add_subdirectory(${3D_PARTY_DIR})
 
 # library itself
 add_subdirectory(gradientboost)
-
-# string(REPLACE " -Werror" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+add_subdirectory(lib)
+add_subdirectory(tests)
