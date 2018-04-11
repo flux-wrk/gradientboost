@@ -45,4 +45,3 @@ std::vector<std::vector<std::string>> ReadCSV(const std::string& file, char sepa
 }
 
 } // namespace NGradientBoost
-

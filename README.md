@@ -31,7 +31,8 @@ Current code is tested with Higgs dataset.
 ### TODO:
 - Add scripts for downloading test datasets
 - Split implementation of decision tree and gradient boosting itself
-- Test library with popular datasets - 
+- Implement custom loss functions
+- Test library with popular datasets
 - Introduce multithreaded training
 - Code quality and test coverage improvements
 - Performance comparison with industrial solutions
