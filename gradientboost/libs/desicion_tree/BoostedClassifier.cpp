@@ -7,12 +7,12 @@ NGradientBoost::BoostedClassifier::DecisionTree::DecisionTree(size_t depth) : de
 
 std::vector<float_t>
 NGradientBoost::BoostedClassifier::DecisionTree::Predict(const std::vector<std::vector<float_t>> &data) const {
-    auto ds = DataFrame(data);
-    std::vector<float_t> res(ds.get_size());
-    for (int i = 0; i < ds.get_size(); ++i) {
+    auto dataframe = DataFrame(data);
+    std::vector<float_t> res(dataframe.size());
+    for (int i = 0; i < dataframe.size(); ++i) {
         size_t mask = 0;
         for (int j = 0; j < depth_; ++j) {
-            mask += (ds[i][splitting_features_[j]] << (depth_ - j));
+            mask += (dataframe[i][splitting_features_[j]] << (depth_ - j));
         }
         res[i] = leaf_answers_[mask];
     }
@@ -21,16 +21,16 @@ NGradientBoost::BoostedClassifier::DecisionTree::Predict(const std::vector<std::
 
 NGradientBoost::BoostedClassifier &
 NGradientBoost::BoostedClassifier::Fit(const std::vector<std::vector<float_t>> &data, const std::vector<float_t> target) {
-    auto dataset = DataFrame(data);
+    auto dataframe = DataFrame(data);
     trees_.clear();
-    std::vector<float_t> cur_pred(dataset.get_size(), 0), temp_pred(dataset.get_size(), 0);
+    std::vector<float_t> current_predictions(dataframe.size(), 0), temp_pred(dataframe.size(), 0);
 
     for (size_t iteration = 0; iteration < tree_count_; ++iteration) {
         DecisionTree weak_classifier(tree_depth_);
-        std::vector<int> leaf_ind(dataset.get_size(), 0);
+        std::vector<int> leaf_indices(dataframe.size(), 0);
 
         for (size_t depth = 0; depth < tree_depth_; ++depth) {
-            std::vector<int> temp_leaf_ind(dataset.get_size(), 0), best_leaf_ind(dataset.get_size(), 0);
+            std::vector<int> temp_leaf_ind(dataframe.size(), 0), best_leaf_ind(dataframe.size(), 0);
             std::vector<float_t> leaf_ans(1 << (depth + 1), 0), best_leaf_ans(1 << (depth + 1), 0);
             std::set<size_t> used_features;
             size_t best_feature = 0;
@@ -38,16 +38,16 @@ NGradientBoost::BoostedClassifier::Fit(const std::vector<std::vector<float_t>> &
             std::vector<float_t> best_leaf_sum;
             std::vector<int> best_leaf_count;
 
-            for (size_t feature_index = 0; feature_index < dataset.features_count(); ++feature_index) {
+            for (size_t feature_index = 0; feature_index < dataframe.features_count(); ++feature_index) {
                 std::vector<float_t> leaf_sum(static_cast<unsigned long>(1 << (depth + 1)), 0.0);
                 std::vector<int> leaf_count(1 << (depth + 1), 0);
                 float_t this_mse = 0.0, this_true_mse = 0.0;
-                if (used_features.count(feature_index / dataset.get_bin_count()) > 0) {
+                if (used_features.count(feature_index / dataframe.get_bin_count()) > 0) {
                     continue;
                 }
-                for (int i = 0; i < dataset.get_size(); ++i) {
-                    temp_leaf_ind[i] = leaf_ind[i] * 2 + dataset[i][feature_index];
-                    leaf_sum[temp_leaf_ind[i]] += target[i] - cur_pred[i];
+                for (int i = 0; i < dataframe.size(); ++i) {
+                    temp_leaf_ind[i] = leaf_indices[i] * 2 + dataframe[i][feature_index];
+                    leaf_sum[temp_leaf_ind[i]] += target[i] - current_predictions[i];
                     ++leaf_count[temp_leaf_ind[i]];
                 }
 
@@ -73,20 +73,20 @@ NGradientBoost::BoostedClassifier::Fit(const std::vector<std::vector<float_t>> &
 
             weak_classifier.splitting_features_.push_back(best_feature);
             weak_classifier.leaf_answers_ = best_leaf_ans;
-            used_features.insert(best_feature / dataset.get_bin_count());
-            leaf_ind = best_leaf_ind;
+            used_features.insert(best_feature / dataframe.get_bin_count());
+            leaf_indices = best_leaf_ind;
 
-            for (int i = 0; i < dataset.get_size(); ++i) {
-                temp_pred[i] = cur_pred[i] + best_leaf_ans[best_leaf_ind[i]];
+            for (size_t i = 0; i < dataframe.size(); ++i) {
+                temp_pred[i] = current_predictions[i] + best_leaf_ans[best_leaf_ind[i]];
             }
         }
-        cur_pred = temp_pred;
+        current_predictions = temp_pred;
 
         float_t MSE = 0.0;
-        for (int i = 0; i < dataset.get_size(); ++i) {
+        for (size_t i = 0; i < dataframe.size(); ++i) {
             MSE += (target[i] - temp_pred[i]) * (target[i] - temp_pred[i]);
         }
-        MSE /= dataset.get_size();
+        MSE /= dataframe.size();
         std::cout << "MSE loss on iteration " << iteration << " : " << MSE << std::endl;
 
         trees_.push_back(weak_classifier);
@@ -95,8 +95,8 @@ NGradientBoost::BoostedClassifier::Fit(const std::vector<std::vector<float_t>> &
 }
 
 std::vector<float_t> NGradientBoost::BoostedClassifier::Predict(const std::vector<std::vector<float_t>> &data) const {
-    auto dataset = DataFrame(data);
-    std::vector<float_t> predictions(dataset.get_size());
+    auto dataframe = DataFrame(data);
+    std::vector<float_t> predictions(dataframe.size());
     for (const DecisionTree &weak_clf : trees_) {
         std::vector<float_t> predictions_for_tree = weak_clf.Predict(data);
         for (int i = 0; i < predictions.size(); ++i) {

@@ -8,6 +8,7 @@
 #include <utility>
 #include <iostream>
 #include <cfloat>
+#include <limits>
 
 namespace NGradientBoost {
 
@@ -24,28 +25,28 @@ namespace NGradientBoost {
         explicit DataFrame(const std::vector<std::vector<float_t>>& data) {
             this->data_ = data;
             num_features_ = data[0].size();
-            BinarizeData();
+            DistributeToBins();
         }
 
-        void BinarizeData() {
-            binary_data_ = std::vector<std::vector<bool> >(data_.size(), std::vector<bool>(16 * num_features_));
-            thresholds_ = std::vector<std::vector<float_t > >(num_features_, std::vector<float_t >(16));
+        void DistributeToBins() {
+            binary_data_ = std::vector<std::vector<bool>>(data_.size(), std::vector<bool>(BIN_COUNT * num_features_));
+            thresholds_ = std::vector<std::vector<float_t>>(num_features_, std::vector<float_t >(BIN_COUNT));
 
-            for (int j = 0; j < num_features_; ++j) {
-                std::vector<double> feature_values(data_.size());
-                for (int i = 0; i < data_.size(); ++i) {
+            for (size_t j = 0; j < num_features_; ++j) {
+                std::vector<float_t> feature_values(data_.size());
+                for (size_t i = 0; i < data_.size(); ++i) {
                     feature_values[i] = data_[i][j];
                 }
 
-                std::sort(feature_values.begin(), feature_values.end());
+                std::sort(std::begin(feature_values), std::end(feature_values));
 
                 for (size_t i = 0; i < BIN_COUNT - 1; ++i) {
                     thresholds_[j][i] = static_cast<float_t>(feature_values[(i + 1) * data_.size() / BIN_COUNT]);
                 }
-                thresholds_[j][BIN_COUNT - 1] = static_cast<float_t>(DBL_MAX);
+                thresholds_[j][BIN_COUNT - 1] = std::numeric_limits<float_t>::max();
 
-                for (int i = 0; i < data_.size(); ++i) {
-                    for (int l = 0; l < BIN_COUNT; ++l) {
+                for (size_t i = 0; i < data_.size(); ++i) {
+                    for (size_t l = 0; l < BIN_COUNT; ++l) {
                         binary_data_[i][BIN_COUNT * j + l] = data_[i][j] < thresholds_[j][l];
                     }
                 }
@@ -57,11 +58,11 @@ namespace NGradientBoost {
             return BIN_COUNT;
         }
 
-        unsigned long get_size() const {
+        size_t size() const {
             return binary_data_.size();
         }
 
-        std::vector<bool> operator[](int index) const {
+        const std::vector<bool>& operator[](int index) const {
             return binary_data_[index];
         }
 
