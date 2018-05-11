@@ -7,6 +7,6 @@ add_executable(gradientboost
 target_link_libraries(gradientboost
     loader
     preprocessing
-    utils
     boosting
-    tbb)
+    tbb CLI11
+        )

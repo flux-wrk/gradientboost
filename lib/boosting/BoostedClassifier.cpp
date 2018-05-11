@@ -22,7 +22,7 @@ BoostedClassifier::DecisionTree::Predict(const std::vector<std::vector<float_t>>
 }
 
 BoostedClassifier &
-BoostedClassifier::Fit(const std::vector<std::vector<float_t>>& data, const std::vector<float_t> target) {
+BoostedClassifier::Fit(const std::vector<std::vector<float_t>>& data, const std::vector<float_t>& target) {
     auto dataframe = DataFrame(data);
     trees_.clear();
     std::vector<float_t> current_predictions(dataframe.size(), 0), temp_pred(dataframe.size(), 0);
@@ -107,6 +107,14 @@ std::vector<float_t> BoostedClassifier::Predict(const std::vector<std::vector<fl
     }
     return predictions;
 }
+    bool BoostedClassifier::Save(std::ostream& stream) const {
+        // TODO: implement this
+        return false;
+    }
+
+    BoostedClassifier::BoostedClassifier(std::istream& stream) {
+        // TODO: implement this
+    }
 
 } // namespace NGradientBoost
 
