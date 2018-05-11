@@ -15,7 +15,6 @@ target_include_directories(gmock_main SYSTEM BEFORE INTERFACE
 target_link_libraries(${target}
     loader
     decision_tree
-    utils
     tbb
     gmock_main)
 
