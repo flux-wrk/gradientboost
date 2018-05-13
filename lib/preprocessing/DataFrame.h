@@ -6,11 +6,10 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <cassert>
 #include <utility>
-#include <iostream>
 #include <cfloat>
 #include <limits>
+#include "tbb/parallel_sort.h"
 
 namespace NGradientBoost {
 
@@ -18,11 +17,12 @@ using Feature = float_t;
 using Sample = std::vector<Feature>;
 using Dataset = std::vector<Sample>;
 
-using Label = int;
+using Label = float_t;
+using Target = std::vector<Label>;
 
 class DataFrame {
 public:
-    DataFrame() {}
+    DataFrame() = default;
 
     explicit DataFrame(const Dataset& data) {
         this->data_ = data;
@@ -40,7 +40,7 @@ public:
                 feature_values[i] = data_[i][j];
             }
 
-            std::sort(std::begin(feature_values), std::end(feature_values));
+            tbb::parallel_sort(std::begin(feature_values), std::end(feature_values));
 
             for (size_t i = 0; i < BIN_COUNT - 1; ++i) {
                 thresholds_[j][i] = static_cast<float_t>(feature_values[(i + 1) * data_.size() / BIN_COUNT]);

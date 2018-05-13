@@ -1,7 +1,8 @@
-aux_source_directory(. preprocessing_SRC)
-
 add_library(preprocessing STATIC
-    ${preprocessing_SRC})
+        DataFrame.h
+        Preprocessor.cpp
+        Preprocessor.h)
 
 target_link_libraries(preprocessing
-    m)
+        tbb
+        m)

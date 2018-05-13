@@ -3,8 +3,14 @@
 #include <set>
 #include <limits>
 #include <fstream>
+#include <iostream>
 
 #include "lib/preprocessing/DataFrame.h"
+#include "tbb/mutex.h"
+#include "tbb/parallel_for.h"
+#include "tbb/blocked_range.h"
+#include "tbb/mutex.h"
+#include "tbb/task_scheduler_init.h"
 
 namespace NGradientBoost {
 
@@ -17,8 +23,10 @@ public:
     }
     explicit BoostedClassifier(std::istream& stream);
 
-    BoostedClassifier& Fit(const std::vector<std::vector<float_t>>& data, const std::vector<float_t>& target);
-    std::vector<float_t> Predict(const std::vector<std::vector<float_t>>& data) const;
+    BoostedClassifier& Fit(const Dataset& data, const Target& target);
+    float_t Eval(const Dataset& data, const Target& target);
+    Target Predict(const Dataset& data) const;
+
     bool Save(std::ostream& stream) const;
 private:
 
@@ -32,6 +40,8 @@ private:
 
         std::vector<float_t> Predict(const std::vector<std::vector<float_t>>& data) const;
     };
+
+    static float_t MSE(const Target& predicted, const Target& actual);
 
     std::vector<DecisionTree> trees_;
     float_t learning_rate_{};
