@@ -65,6 +65,11 @@ int main(int argc, char* argv[]) {
         Target train_target;
         std::tie(train_features, train_target) = LoadDataset(train_dataset_file, train_target_label);
         std::cout << train_target.size() << " rows" << std::endl;
+        int a=0, b=0;
+        for (float_t label: train_target) {
+            if(label == 0.0) ++a; else if (label==1.0) ++b; else std::cout <<  "err\n";
+        }
+        std::cout << a << " " << b << "\n";
 
         classifier = std::make_unique<BoostedClassifier>(trees_count, tree_depth, learning_rate);
 
@@ -90,6 +95,8 @@ int main(int argc, char* argv[]) {
         Dataset test_features;
         Target test_target;
         std::tie(test_features, test_target) = LoadDataset(test_dataset_file, target_test_label);
+
+
 
         if (!classifier) { // classifier is not fitted with "fit" subcommand
             std::ifstream stream(model_file);
