@@ -43,4 +43,9 @@ Current code is tested with Higgs dataset.
 
 ### Benchmark results
 
-[benchmark results for Higgs dataset coming soon]
+Benchmark was done on [following](https://support.apple.com/kb/sp719?locale=en_US) hardware specs:
+- 2.8 - 4.0 GHz quad-core Intel Core i7 CPU, 6MB L3 cache.
+- 16GB of 1600MHz DDR3L memory.
+
+#### Higgs Boson ([kaggle](https://www.kaggle.com/c/higgs-boson/data)) 
+

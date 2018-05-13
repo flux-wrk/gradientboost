@@ -48,7 +48,7 @@ namespace NGradientBoost {
     void DecisionTree::Fit(const DataFrame& dataframe,
                            const Target& target,
                            Target& current_predictions,
-                           Target& temp_pred) {
+                           Target& temp_predictions) {
         std::vector<int> leaf_indices(dataframe.size(), 0);
         tbb::mutex locker;
 
@@ -101,7 +101,7 @@ namespace NGradientBoost {
             leaf_indices = chosen_leaf_ind;
 
             for (size_t i = 0; i < dataframe.size(); ++i) {
-                temp_pred[i] = current_predictions[i] + chosen_leaf_ans[chosen_leaf_ind[i]];
+                temp_predictions[i] = current_predictions[i] + chosen_leaf_ans[chosen_leaf_ind[i]];
             }
         }
     }

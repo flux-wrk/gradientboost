@@ -77,13 +77,4 @@ namespace NGradientBoost {
         }
     };
 
-    template<typename TInput, typename TOutput>
-    std::vector<std::vector<TOutput>> ApplyTransforms(
-        const std::vector<std::vector<TInput>>&,
-        const std::vector<Transformer<TInput, TOutput>>&
-    ) {
-        std::vector<std::vector<TOutput>> result;
-        return result;
-    }
-
 } // namespace NGradientBoost
