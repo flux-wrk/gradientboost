@@ -5,4 +5,7 @@ add_library(boosting STATIC
         BoostedClassifier.h
         )
 
-target_link_libraries(boosting tbb m)
+target_link_libraries(boosting
+        tbb
+        decision_tree
+        m)
