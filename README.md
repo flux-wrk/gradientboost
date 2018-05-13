@@ -23,17 +23,11 @@ Sample command line:
   --model 		Name of saved model file
 
 ./gradientboost eval
-  --data       	Model file for a classifier
-  --target     	Target label
-  --model 		Name of model file to test (if no model given, assuming evaluation of model trained in 'fit' subcommand)
+  --data      Model file for a classifier
+  --target    Target label
+  --model     Name of model file to test (if no model given, assuming evaluation of model trained in 'fit' subcommand)
 ```
-
-Parameters explanation:
-- `--train` - path to train dataset. Last column treated as categorial label for now.
-- `--test` - path to test dataset in CSV format.
-- `--tree-depth` or `--d` - depth of tree.
-- `--learning-rate` or `--l` - learning rate. Make no effect now, but this will be changed soon.
-- `--num-trees` or `--n` - count of trees in ensemble.
+You can combine training and evaluation in one run. You also can use `--nthreads` option to control concurrency level (uses all cpu cores by default).
 
 ### Implementation details
 This library (obviously) implements gradient boosting over decision trees. In current implementation we use oblivious decision trees with histograms for "fast" training.
@@ -44,7 +38,7 @@ Current code is tested with Higgs dataset.
 - [ ] Implement custom loss functions
 - [x] Test library with popular datasets
 - [x] Introduce multithreaded training
-- [x] Code quality and test coverage improvements
+- [x] Code quality improvements
 - [x] Performance comparison with industrial solutions
 
 ### Benchmark results
