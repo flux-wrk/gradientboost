@@ -4,6 +4,8 @@
 #include <limits>
 #include <fstream>
 #include <iostream>
+#include <chrono>
+#include <cassert>
 
 #include "lib/decision_tree/Tree.h"
 #include "lib/preprocessing/DataFrame.h"
