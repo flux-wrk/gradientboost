@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     predict->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
     predict->add_option("--target", target_pred_label , "Target label")->required();
     predict->add_option("--output", output_csv, "Output csv path")->required();
-
+/*
     predict->set_callback([&]() {
         tbb::task_scheduler_init scheduler(num_threads);
         std::cout << "Called predict" << std::endl;
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
         }
         std::cout << "Predicted! " << std::endl;
     });
-
+*/
     app.require_subcommand();
 
     std::cout.precision(5);

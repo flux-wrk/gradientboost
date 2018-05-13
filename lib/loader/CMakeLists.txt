@@ -1,8 +1,8 @@
-aux_source_directory(. loader_SRC)
+include_directories(${CMAKE_SOURCE_DIR})
 
 add_library(loader STATIC
-    ${loader_SRC})
+        CSV.h
+        CSV.cpp
+    )
 
-target_link_libraries(loader
-        tbb
-    m)
+target_link_libraries(loader tbb)
