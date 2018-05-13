@@ -6,6 +6,7 @@
 .idea/
 .vscode/
 .vs/
+.ipynb_checkpoints/
 
 # Compilation stuff
 build/*

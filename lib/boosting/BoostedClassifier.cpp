@@ -7,15 +7,15 @@ namespace NGradientBoost {
 
         auto dataframe = DataFrame(data);
         trees_.clear();
-        std::vector<float_t> current_predictions(dataframe.size(), 0), temp_pred(dataframe.size(), 0);
+        std::vector<float_t> current_predictions(dataframe.size(), 0), temp_predictions(dataframe.size(), 0);
 
         for (size_t iteration = 0; iteration < tree_count_; ++iteration) {
 
             DecisionTree weak_classifier(tree_depth_);
-            weak_classifier.Fit(dataframe, target, current_predictions, temp_pred);
+            weak_classifier.Fit(dataframe, target, current_predictions, temp_predictions);
 
-            current_predictions = temp_pred;
-            float_t loss = BoostedClassifier::MSE(target, temp_pred);
+            current_predictions = temp_predictions;
+            float_t loss = BoostedClassifier::MSE(target, temp_predictions);
             std::cout << "Loss on iteration " << (iteration + 1) << " : " << loss << std::endl;
 
             trees_.push_back(weak_classifier);

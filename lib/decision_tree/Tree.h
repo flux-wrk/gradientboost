@@ -27,7 +27,7 @@ namespace NGradientBoost {
 
         void Save(std::ostream& stream) const;
         std::vector<float_t> Predict(const std::vector<std::vector<float_t>>& data) const;
-        void Fit(const DataFrame& dataframe, const Target& target, Target& current_predictions, Target& temp_pred);
+        void Fit(const DataFrame& dataframe, const Target& target, Target& current_predictions, Target& temp_predictions);
 
     };
 

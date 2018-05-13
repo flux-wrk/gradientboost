@@ -46,5 +46,13 @@ namespace NGradientBoost {
         return ReadCSV(stream, separator, skip_header);
     }
 
+    void WriteCSV(std::ostream& stream, const std::vector<float_t>& values, std::string header) {
+        if (!header.empty()) {
+            stream << header << "\n";
+        }
+        for (const auto value: values) {
+            stream << value << "\n";
+        }
+    }
 } // namespace NGradientBoost
 

@@ -37,7 +37,26 @@ std::pair<Dataset, Target> LoadDataset(const std::string& file_name, const std::
     }
 
     return {train_features, train_target};
-};
+}
+
+Dataset LoadDataset(const std::string& file_name) {
+    StringMatrix string_frame;
+    StringVector csv_header;
+    std::tie(string_frame, csv_header) = NGradientBoost::ReadCSV(file_name);
+
+    Dataset features;
+    NGradientBoost::ToFloat features_encoder;
+
+    for (const auto& row : string_frame) {
+        std::vector<float_t> feature_vec;
+        for (size_t i = 0; i < row.size(); ++i) {
+            features_encoder.Transform(row[i], feature_vec);
+        }
+        features.emplace_back(feature_vec);
+    }
+
+    return features;
+}
 
 int main(int argc, char* argv[]) {
     std::unique_ptr<BoostedClassifier> classifier;
@@ -83,8 +102,8 @@ int main(int argc, char* argv[]) {
     });
 
     CLI::App* eval = app.add_subcommand("eval", "Evaluates model performance");
-    std::string test_dataset_file, target_test_label = "label";
-    eval->add_option("--data", test_dataset_file, "Model file for a classifier")->required()->check(CLI::ExistingFile);
+    std::string test_dataset_file, target_test_label = "Label";
+    eval->add_option("--data", test_dataset_file, "Dataset for evaluation")->required()->check(CLI::ExistingFile);
     eval->add_option("--target", target_test_label, "Target label")->required();
     eval->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
 
@@ -96,8 +115,6 @@ int main(int argc, char* argv[]) {
         Target test_target;
         std::tie(test_features, test_target) = LoadDataset(test_dataset_file, target_test_label);
 
-
-
         if (!classifier) { // classifier is not fitted with "fit" subcommand
             std::ifstream stream(model_file);
             classifier = std::make_unique<BoostedClassifier>(stream);
@@ -107,6 +124,32 @@ int main(int argc, char* argv[]) {
         std::cout << "MSE: " << mse << std::endl;
     });
 
+    CLI::App* predict = app.add_subcommand("predict", "Runs model inference on given dataset");
+    std::string predict_dataset_file, target_pred_label = "Label", output_csv;
+    predict->add_option("--data", predict_dataset_file, "Model file for a classifier")->required()->check(CLI::ExistingFile);
+    predict->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
+    predict->add_option("--target", target_pred_label , "Target label")->required();
+    predict->add_option("--output", output_csv, "Output csv path")->required();
+
+    predict->set_callback([&]() {
+        tbb::task_scheduler_init scheduler(num_threads);
+        std::cout << "Called predict" << std::endl;
+
+        Dataset test_features = LoadDataset(predict_dataset_file);
+
+        if (!classifier) { // classifier is not fitted with "fit" subcommand
+            std::ifstream stream(model_file);
+            classifier = std::make_unique<BoostedClassifier>(stream);
+        }
+
+        Target predicted = classifier->Predict(test_features);
+        {
+            std::ofstream stream(output_csv);
+            WriteCSV(stream, predicted, target_pred_label);
+        }
+        std::cout << "Predicted! " << std::endl;
+    });
+
     app.require_subcommand();
 
     std::cout.precision(5);
@@ -114,11 +157,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
-/*
-Loss on iteration 1 : 0.011618
-Loss on iteration 2 : 0.010934
-Loss on iteration 3 : 0.010557
-Loss on iteration 4 : 0.0098072
-Loss on iteration 5 : 0.0096362
-*/
