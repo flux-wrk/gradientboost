@@ -4,6 +4,7 @@
 #include "lib/preprocessing/Preprocessor.h"
 #include "lib/boosting/BoostedClassifier.h"
 #include "CLI/CLI.hpp"
+#include "tbb/task_scheduler_init.h"
 
 using namespace NGradientBoost;
 
