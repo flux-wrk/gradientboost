@@ -13,9 +13,10 @@ target_include_directories(gmock_main SYSTEM BEFORE INTERFACE
     "${gmock_SOURCE_DIR}/include")
 
 target_link_libraries(${target}
-    loader
-    decision_tree
-    tbb
-    gmock_main)
+        loader
+        decision_tree
+        tbb
+        boosting
+        gmock_main)
 
 add_test(NAME ${target} COMMAND ${target})

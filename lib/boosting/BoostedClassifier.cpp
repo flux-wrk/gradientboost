@@ -4,7 +4,7 @@ namespace NGradientBoost {
 
 BoostedClassifier::DecisionTree::DecisionTree(size_t depth) : depth_(depth) {
     splitting_features_ = std::vector<size_t>();
-    leaf_answers_ = std::vector<float_t>(static_cast<unsigned long>(1 << (depth_ + 1)), 0.0);
+    leaf_answers_ = std::vector<float_t>(1ul << depth_, 0.0);
 }
 
 std::vector<float_t>
@@ -14,7 +14,7 @@ BoostedClassifier::DecisionTree::Predict(const std::vector<std::vector<float_t>>
     for (size_t i = 0; i < dataframe.size(); ++i) {
         size_t mask = 0;
         for (size_t j = 0; j < depth_; ++j) {
-            mask += (dataframe[i][splitting_features_[j]] << (depth_ - j));
+            mask += (dataframe[i][splitting_features_[j]] << (depth_ - j - 1));
         }
         res[i] = leaf_answers_[mask];
     }
@@ -91,12 +91,7 @@ BoostedClassifier& BoostedClassifier::Fit(const Dataset& data, const Target& tar
         }
         current_predictions = temp_pred;
 
-        float_t MSE = 0.0;
-        for (size_t i = 0; i < dataframe.size(); ++i) {
-            MSE += (target[i] - temp_pred[i]) * (target[i] - temp_pred[i]);
-        }
-        MSE /= dataframe.size();
-        std::cout << "MSE loss on iteration " << iteration << " : " << MSE << std::endl;
+        std::cout << "MSE loss on iteration " << iteration << " : " << BoostedClassifier::MSE(target, temp_pred) << std::endl;
 
         trees_.push_back(weak_classifier);
     }
@@ -159,14 +154,19 @@ std::vector<float_t> BoostedClassifier::Predict(const std::vector<std::vector<fl
     }
 
     float_t BoostedClassifier::Eval(const Dataset& data, const Target& target) {
-        return 0;
+        return BoostedClassifier::MSE(Predict(data), target);
     }
 
+    inline float_t sqr(float_t x) { return  x * x; }
     float_t BoostedClassifier::MSE(const Target& predicted, const Target& actual) {
+        for (int i = 0; i < 10; ++i) {
+            //std::cout << predicted[i] << " " << actual[i] << std::endl;
+        }
+
         assert(predicted.size() == actual.size());
         float_t MSE = 0.0;
         for (size_t idx = 0; idx < predicted.size(); ++idx) {
-            MSE += (predicted[idx] - actual[idx]) * (predicted[idx] - actual[idx]);
+            MSE += sqr(predicted[idx] - actual[idx]);
         }
         return MSE / predicted.size();
     }
