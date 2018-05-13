@@ -10,6 +10,7 @@ namespace NGradientBoost {
         std::vector<float_t> current_predictions(dataframe.size(), 0), temp_pred(dataframe.size(), 0);
 
         for (size_t iteration = 0; iteration < tree_count_; ++iteration) {
+
             DecisionTree weak_classifier(tree_depth_);
             std::vector<int> leaf_indices(dataframe.size(), 0);
             tbb::mutex locker;
@@ -40,11 +41,7 @@ namespace NGradientBoost {
                     }
 
                     for (size_t i = 0; i < leaf_ans.size(); ++i) {
-                        if (leaf_count[i] == 0) {
-                            leaf_ans[i] = 0;
-                        } else {
-                            leaf_ans[i] = leaf_sum[i] / leaf_count[i];
-                        }
+                        leaf_ans[i] = (leaf_count[i] == 0) ? 0 : leaf_sum[i] / leaf_count[i];
                         this_mse += leaf_ans[i] * (leaf_count[i] * leaf_ans[i] - 2 * leaf_sum[i]);
                     }
 
@@ -98,7 +95,6 @@ namespace NGradientBoost {
         stream << tree_depth_ << " " << tree_count_ << " " << learning_rate_ << std::endl;
         for (const auto& tree : trees_) {
             tree.Save(stream);
-
         }
         return true;
     }

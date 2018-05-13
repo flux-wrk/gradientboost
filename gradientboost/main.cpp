@@ -58,13 +58,17 @@ int main(int argc, char* argv[]) {
 
     fit->set_callback([&]() {
         tbb::task_scheduler_init scheduler(num_threads);
-        std::cout << "Called fit" << std::endl;
+        std::cout << "Called fit on " << train_dataset_file << ", loading data: ";
 
         Dataset train_features;
         Target train_target;
         std::tie(train_features, train_target) = LoadDataset(train_dataset_file, train_target_label);
+        std::cout << train_target.size() << " rows" << std::endl;
 
         classifier = std::make_unique<BoostedClassifier>(trees_count, tree_depth, learning_rate);
+
+        std::cout << "Fitting GBM with " << trees_count << " trees of depth " << tree_depth << ":" << std::endl;
+
         classifier->Fit(train_features, train_target);
         {
             std::ofstream stream(model_file);
@@ -102,3 +106,11 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+/*
+Loss on iteration 1 : 0.011618
+Loss on iteration 2 : 0.010934
+Loss on iteration 3 : 0.010557
+Loss on iteration 4 : 0.0098072
+Loss on iteration 5 : 0.0096362
+*/

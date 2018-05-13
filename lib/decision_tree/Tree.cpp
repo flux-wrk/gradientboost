@@ -50,4 +50,9 @@ namespace NGradientBoost {
         }
     }
 
+    void DecisionTree::Fit(const DataFrame& data, const Target& target) {
+
+    }
+
+
 }
