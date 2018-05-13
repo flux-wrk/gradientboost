@@ -87,4 +87,3 @@ namespace NGradientBoost {
     }
 
 } // namespace NGradientBoost
-
