@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
         Target test_target;
         std::tie(test_features, test_target) = LoadDataset(test_dataset_file, target_test_label);
 
-        if (true || !classifier) {
+        if (!classifier) { // classifier is not fitted with "fit" subcommand
             std::ifstream stream(model_file);
             classifier = std::make_unique<BoostedClassifier>(stream);
         }
