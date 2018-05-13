@@ -40,12 +40,12 @@ This library (obviously) implements gradient boosting over decision trees. In cu
 Current code is tested with Higgs dataset.
 
 ### TODO:
-[x] Split implementation of decision tree and gradient boosting itself
-[-] Implement custom loss functions
-[x] Test library with popular datasets
-[x] Introduce multithreaded training
-[x] Code quality and test coverage improvements
-[x] Performance comparison with industrial solutions
+- [x] Split implementation of decision tree and gradient boosting itself
+- [ ] Implement custom loss functions
+- [x] Test library with popular datasets
+- [x] Introduce multithreaded training
+- [x] Code quality and test coverage improvements
+- [x] Performance comparison with industrial solutions
 
 ### Benchmark results
 
