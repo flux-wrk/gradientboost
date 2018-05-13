@@ -29,17 +29,14 @@ namespace NGradientBoost {
         Target Predict(const Dataset& data) const;
 
         bool Save(std::ostream& stream) const;
+
      private:
-
-
-
         static float_t MSE(const Target& predicted, const Target& actual);
 
         std::vector<DecisionTree> trees_;
         float_t learning_rate_{};
         size_t tree_count_;
         size_t tree_depth_;
-//    bool valid_{false};
     };
 
 } // namespace NGradientBoost
