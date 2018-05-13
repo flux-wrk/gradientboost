@@ -42,7 +42,7 @@ std::pair<Dataset, Target> LoadDataset(const std::string& file_name, const std::
 int main(int argc, char* argv[]) {
     std::unique_ptr<BoostedClassifier> classifier;
 
-    CLI::App app {"Gradient boosting trainer."};
+    CLI::App app{"Gradient boosting trainer."};
     int num_threads = -1;
     app.add_option("--target", num_threads, "Target label");
 
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
     fit->add_option("--depth", tree_depth, "Depth of each tree");
     fit->add_option("--model", model_file, "Name of saved model file")->required();
 
-    fit->set_callback([&](){
+    fit->set_callback([&]() {
         std::cout << (classifier ? "not null" : "null") << std::endl;
         tbb::task_scheduler_init scheduler(num_threads);
         std::cout << "Called fit" << std::endl;
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
         Target test_target;
         std::tie(test_features, test_target) = LoadDataset(test_dataset_file, target_test_label);
 
-        if (!classifier) {
+        if (true || !classifier) {
             std::ifstream stream(model_file);
             classifier = std::make_unique<BoostedClassifier>(stream);
         }

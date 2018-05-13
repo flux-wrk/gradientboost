@@ -34,22 +34,22 @@ public:
         binary_data_ = std::vector<std::vector<bool>>(data_.size(), std::vector<bool>(BIN_COUNT * num_features_));
         thresholds_ = std::vector<std::vector<float_t>>(num_features_, std::vector<float_t >(BIN_COUNT));
 
-        for (size_t j = 0; j < num_features_; ++j) {
+        for (size_t feature_idx = 0; feature_idx < num_features_; ++feature_idx) {
             std::vector<Feature> feature_values(data_.size());
-            for (size_t i = 0; i < data_.size(); ++i) {
-                feature_values[i] = data_[i][j];
+            for (size_t sample_idx = 0; sample_idx < data_.size(); ++sample_idx) {
+                feature_values[sample_idx] = data_[sample_idx][feature_idx];
             }
 
             tbb::parallel_sort(std::begin(feature_values), std::end(feature_values));
 
-            for (size_t i = 0; i < BIN_COUNT - 1; ++i) {
-                thresholds_[j][i] = static_cast<float_t>(feature_values[(i + 1) * data_.size() / BIN_COUNT]);
+            for (size_t bin_idx = 0; bin_idx < BIN_COUNT - 1; ++bin_idx) {
+                thresholds_[feature_idx][bin_idx] = static_cast<float_t>(feature_values[(bin_idx + 1) * data_.size() / BIN_COUNT]);
             }
-            thresholds_[j][BIN_COUNT - 1] = std::numeric_limits<float_t>::max();
+            thresholds_[feature_idx][BIN_COUNT - 1] = std::numeric_limits<float_t>::max();
 
-            for (size_t i = 0; i < data_.size(); ++i) {
-                for (size_t l = 0; l < BIN_COUNT; ++l) {
-                    binary_data_[i][BIN_COUNT * j + l] = data_[i][j] < thresholds_[j][l];
+            for (size_t sample_idx = 0; sample_idx < data_.size(); ++sample_idx) {
+                for (size_t bin_idx = 0; bin_idx < BIN_COUNT; ++bin_idx) {
+                    binary_data_[sample_idx][BIN_COUNT * feature_idx + bin_idx] = data_[sample_idx][feature_idx] < thresholds_[feature_idx][bin_idx];
                 }
             }
         }
