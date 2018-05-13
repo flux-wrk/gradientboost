@@ -14,7 +14,6 @@ std::pair<Dataset, Target> LoadDataset(const std::string& file_name, const std::
 
     auto header_position = std::find(std::cbegin(csv_header), std::cend(csv_header), target_column);
     size_t target_index = (header_position == std::cend(csv_header)) ? 0 : header_position - std::cbegin(csv_header);
-    std::cout << "target index: " << target_index << std::endl;
 
     Target train_target;
     Dataset train_features;
@@ -44,7 +43,7 @@ int main(int argc, char* argv[]) {
 
     CLI::App app{"Gradient boosting trainer."};
     int num_threads = -1;
-    app.add_option("--target", num_threads, "Target label");
+    app.add_option("--nthreads", num_threads, "Number of threads to use");
 
     CLI::App* fit = app.add_subcommand("fit", "Trains model on given dataset");
     std::string train_dataset_file, train_target_label = "Label", model_file;
@@ -58,7 +57,6 @@ int main(int argc, char* argv[]) {
     fit->add_option("--model", model_file, "Name of saved model file")->required();
 
     fit->set_callback([&]() {
-        std::cout << (classifier ? "not null" : "null") << std::endl;
         tbb::task_scheduler_init scheduler(num_threads);
         std::cout << "Called fit" << std::endl;
 

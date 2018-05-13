@@ -1,19 +1,29 @@
 #pragma once
+#include <vector>
+#include <string>
+#include <set>
+#include <limits>
+#include <fstream>
+#include <iostream>
+#include <cfloat>
+#include <cmath>
+
+#include "lib/preprocessing/DataFrame.h"
 
 namespace NGradientBoost {
 
-class Tree {
-public:
-    explicit Tree(int leaf_count)
-        : leaf_count_(leaf_count)
-    { }
+    class DecisionTree {
+     public:
+        size_t depth_;
+        std::vector<size_t> splitting_features_;
 
-    int GetLeafCount() {
-        return leaf_count_;
-    }
+        std::vector<float_t> leaf_answers_{};
 
-private:
-    int leaf_count_;
-};
+        explicit DecisionTree(size_t depth);
+        explicit DecisionTree(std::istream& stream);
+
+        void Save(std::ostream& stream) const;
+        std::vector<float_t> Predict(const std::vector<std::vector<float_t>>& data) const;
+    };
 
 }

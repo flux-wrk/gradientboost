@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "lib/decision_tree/Tree.h"
 #include "lib/preprocessing/DataFrame.h"
 #include "tbb/mutex.h"
 #include "tbb/parallel_for.h"
@@ -30,18 +31,7 @@ namespace NGradientBoost {
         bool Save(std::ostream& stream) const;
      private:
 
-        class DecisionTree {
-         public:
-            size_t depth_;
-            std::vector<size_t> splitting_features_;
-            std::vector<float_t> leaf_answers_{};
 
-            explicit DecisionTree(size_t depth);
-            explicit DecisionTree(std::istream& stream);
-
-            void Save(std::ostream& stream) const;
-            std::vector<float_t> Predict(const std::vector<std::vector<float_t>>& data) const;
-        };
 
         static float_t MSE(const Target& predicted, const Target& actual);
 
