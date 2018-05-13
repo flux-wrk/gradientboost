@@ -20,39 +20,87 @@ namespace NGradientBoost {
         }
         return res;
     }
-    void DecisionTree::Save(std::ostream& stream) const {
-        stream << depth_ << std::endl;
-        stream << leaf_answers_.size() << std::endl;
-        for (const auto& answer : leaf_answers_) {
-            stream << answer << " ";
-        }
-        stream << std::endl << splitting_features_.size() << std::endl;
 
+    void DecisionTree::Save(std::ostream& stream) const {
+        stream << depth_ << " ";
         for (auto feature : splitting_features_) {
             stream << feature << " ";
+        }
+        for (const auto& answer : leaf_answers_) {
+            stream << answer << " ";
         }
         stream << std::endl;
     }
 
     DecisionTree::DecisionTree(std::istream& stream) {
         stream >> depth_;
-        size_t leaf_answer_length;
-        stream >> leaf_answer_length;
-        leaf_answers_ = std::vector<float_t>(leaf_answer_length);
-        for (size_t i = 0; i < leaf_answer_length; ++i) {
-            stream >> leaf_answers_[i];
-        }
-        size_t splitting_feature_length;
-        stream >> splitting_feature_length;
-        splitting_features_ = std::vector<size_t>(splitting_feature_length);
-        for (size_t i = 0; i < splitting_feature_length; ++i) {
+
+        splitting_features_.resize(depth_);
+        for (size_t i = 0; i < depth_; ++i) {
             stream >> splitting_features_[i];
         }
+
+        leaf_answers_.resize(1ul << depth_);
+        for (size_t i = 0; i < (1ul << depth_); ++i) {
+            stream >> leaf_answers_[i];
+        }
     }
 
-    void DecisionTree::Fit(const DataFrame& data, const Target& target) {
+    void DecisionTree::Fit(const DataFrame& dataframe, const Target& target, Target& current_predictions, Target& temp_pred) {
+        std::vector<int> leaf_indices(dataframe.size(), 0);
+        tbb::mutex locker;
+
+        for (size_t depth = 1; depth <= depth_; ++depth) {
+            size_t layer_width = 1ul << depth;
+            std::vector<int> best_leaf_ind(dataframe.size(), 0);
+            std::vector<float_t> best_leaf_ans(layer_width, 0);
+            std::set<size_t> used_features;
+            size_t best_feature = 0;
+            float_t best_mse = std::numeric_limits<float_t>::max();
+            std::vector<float_t> best_leaf_sum;
+            std::vector<int> best_leaf_count;
+
+            tbb::parallel_for(size_t(0), dataframe.features_count(), size_t(1), [&](size_t feature_index) {
+                std::vector<int> temp_leaf_ind(dataframe.size(), 0), leaf_count(layer_width, 0);
+                std::vector<float_t> leaf_ans(layer_width, 0.0f), leaf_sum(layer_width, 0.0f);
+
+                float_t this_mse = 0.0;
+                if (used_features.count(feature_index / dataframe.get_bin_count()) > 0) {
+                    return;
+                }
+                for (size_t i = 0; i < dataframe.size(); ++i) {
+                    temp_leaf_ind[i] = leaf_indices[i] * 2 + dataframe[i][feature_index];
+                    leaf_sum[temp_leaf_ind[i]] += target[i] - current_predictions[i];
+                    ++leaf_count[temp_leaf_ind[i]];
+                }
+
+                for (size_t i = 0; i < leaf_ans.size(); ++i) {
+                    leaf_ans[i] = (leaf_count[i] == 0) ? 0 : leaf_sum[i] / leaf_count[i];
+                    this_mse += leaf_ans[i] * (leaf_count[i] * leaf_ans[i] - 2 * leaf_sum[i]);
+                }
+
+                {
+                    tbb::mutex::scoped_lock lock(locker);
+                    if (this_mse < best_mse) {
+                        best_mse = this_mse;
+                        best_feature = feature_index;
+                        best_leaf_ans = leaf_ans;
+                        best_leaf_ind = temp_leaf_ind;
+                        best_leaf_sum = leaf_sum;
+                        best_leaf_count = leaf_count;
+                    }
+                }
+            });
+
+            splitting_features_.push_back(best_feature);
+            leaf_answers_ = best_leaf_ans;
+            used_features.insert(best_feature / dataframe.get_bin_count());
+            leaf_indices = best_leaf_ind;
+
+            for (size_t i = 0; i < dataframe.size(); ++i) {
+                temp_pred[i] = current_predictions[i] + best_leaf_ans[best_leaf_ind[i]];
+            }
+        }
 
     }
-
-
 }

@@ -9,6 +9,9 @@
 #include <cmath>
 
 #include "lib/preprocessing/DataFrame.h"
+#include "tbb/mutex.h"
+#include "tbb/parallel_for.h"
+#include "tbb/blocked_range.h"
 
 namespace NGradientBoost {
 
@@ -24,7 +27,7 @@ namespace NGradientBoost {
 
         void Save(std::ostream& stream) const;
         std::vector<float_t> Predict(const std::vector<std::vector<float_t>>& data) const;
-        void Fit(const DataFrame& data, const Target& target);
+        void Fit(const DataFrame& dataframe, const Target& target, Target& current_predictions, Target& temp_pred);
 
     };
 

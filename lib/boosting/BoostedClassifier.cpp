@@ -12,61 +12,8 @@ namespace NGradientBoost {
         for (size_t iteration = 0; iteration < tree_count_; ++iteration) {
 
             DecisionTree weak_classifier(tree_depth_);
-            std::vector<int> leaf_indices(dataframe.size(), 0);
-            tbb::mutex locker;
+            weak_classifier.Fit(dataframe, target, current_predictions, temp_pred);
 
-            for (size_t depth = 1; depth <= tree_depth_; ++depth) {
-                std::vector<int> best_leaf_ind(dataframe.size(), 0);
-                std::vector<float_t> best_leaf_ans(1ul << depth, 0);
-                std::set<size_t> used_features;
-                size_t best_feature = 0;
-                auto best_mse = std::numeric_limits<float_t>::max();
-                std::vector<float_t> best_leaf_sum;
-                std::vector<int> best_leaf_count;
-
-                tbb::parallel_for(size_t(0), dataframe.features_count(), size_t(1), [&](size_t feature_index) {
-                    std::vector<int> temp_leaf_ind(dataframe.size(), 0);
-                    std::vector<float_t> leaf_ans(1ul << depth, 0);
-                    std::vector<float_t> leaf_sum(1ul << depth, 0.0);
-                    std::vector<int> leaf_count(1ul << depth, 0);
-
-                    float_t this_mse = 0.0;
-                    if (used_features.count(feature_index / dataframe.get_bin_count()) > 0) {
-                        return;
-                    }
-                    for (size_t i = 0; i < dataframe.size(); ++i) {
-                        temp_leaf_ind[i] = leaf_indices[i] * 2 + dataframe[i][feature_index];
-                        leaf_sum[temp_leaf_ind[i]] += target[i] - current_predictions[i];
-                        ++leaf_count[temp_leaf_ind[i]];
-                    }
-
-                    for (size_t i = 0; i < leaf_ans.size(); ++i) {
-                        leaf_ans[i] = (leaf_count[i] == 0) ? 0 : leaf_sum[i] / leaf_count[i];
-                        this_mse += leaf_ans[i] * (leaf_count[i] * leaf_ans[i] - 2 * leaf_sum[i]);
-                    }
-
-                    {
-                        tbb::mutex::scoped_lock lock(locker);
-                        if (this_mse < best_mse) {
-                            best_mse = this_mse;
-                            best_feature = feature_index;
-                            best_leaf_ans = leaf_ans;
-                            best_leaf_ind = temp_leaf_ind;
-                            best_leaf_sum = leaf_sum;
-                            best_leaf_count = leaf_count;
-                        }
-                    }
-                });
-
-                weak_classifier.splitting_features_.push_back(best_feature);
-                weak_classifier.leaf_answers_ = best_leaf_ans;
-                used_features.insert(best_feature / dataframe.get_bin_count());
-                leaf_indices = best_leaf_ind;
-
-                for (size_t i = 0; i < dataframe.size(); ++i) {
-                    temp_pred[i] = current_predictions[i] + best_leaf_ans[best_leaf_ind[i]];
-                }
-            }
             current_predictions = temp_pred;
             float_t loss = BoostedClassifier::MSE(target, temp_pred);
             std::cout << "Loss on iteration " << (iteration + 1) << " : " << loss << std::endl;
@@ -91,6 +38,8 @@ namespace NGradientBoost {
         }
         return predictions;
     }
+
+
     bool BoostedClassifier::Save(std::ostream& stream) const {
         stream << tree_depth_ << " " << tree_count_ << " " << learning_rate_ << std::endl;
         for (const auto& tree : trees_) {
