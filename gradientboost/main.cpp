@@ -14,6 +14,7 @@ std::pair<Dataset, Target> LoadDataset(const std::string& file_name, const std::
 
     auto header_position = std::find(std::cbegin(csv_header), std::cend(csv_header), target_column);
     size_t target_index = (header_position == std::cend(csv_header)) ? 0 : header_position - std::cbegin(csv_header);
+    std::cout << "target index: " << target_index << std::endl;
 
     Target train_target;
     Dataset train_features;
@@ -46,7 +47,7 @@ int main(int argc, char* argv[]) {
     app.add_option("--target", num_threads, "Target label");
 
     CLI::App* fit = app.add_subcommand("fit", "Trains model on given dataset");
-    std::string train_dataset_file, train_target_label = "label", model_file;
+    std::string train_dataset_file, train_target_label = "Label", model_file;
     size_t tree_depth = 4, trees_count = 16;
     float_t learning_rate = 1.0f;
 
@@ -57,6 +58,7 @@ int main(int argc, char* argv[]) {
     fit->add_option("--model", model_file, "Name of saved model file")->required();
 
     fit->set_callback([&](){
+        std::cout << (classifier ? "not null" : "null") << std::endl;
         tbb::task_scheduler_init scheduler(num_threads);
         std::cout << "Called fit" << std::endl;
 
@@ -76,6 +78,8 @@ int main(int argc, char* argv[]) {
     std::string test_dataset_file, target_test_label = "label";
     eval->add_option("--data", test_dataset_file, "Model file for a classifier")->required()->check(CLI::ExistingFile);
     eval->add_option("--target", target_test_label, "Target label")->required();
+    eval->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
+
     eval->set_callback([&]() {
         tbb::task_scheduler_init scheduler(num_threads);
         std::cout << "Called eval" << std::endl;
@@ -84,7 +88,7 @@ int main(int argc, char* argv[]) {
         Target test_target;
         std::tie(test_features, test_target) = LoadDataset(test_dataset_file, target_test_label);
 
-        {
+        if (!classifier) {
             std::ifstream stream(model_file);
             classifier = std::make_unique<BoostedClassifier>(stream);
         }
@@ -94,6 +98,8 @@ int main(int argc, char* argv[]) {
     });
 
     app.require_subcommand();
+
+    std::cout.precision(5);
     CLI11_PARSE(app, argc, argv);
 
     return 0;
