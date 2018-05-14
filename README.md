@@ -21,11 +21,18 @@ Sample command line:
   --trees 		Number of trees in ensemble (default - 16)
   --depth 		Depth of each tree (default - 4)
   --model 		Name of saved model file
+  --lr        Learning rate of boosting process
 
 ./gradientboost eval
   --data      Model file for a classifier
   --target    Target label
   --model     Name of model file to test (if no model given, assuming evaluation of model trained in 'fit' subcommand)
+  
+./gradientboost predict
+  --data      Model file for a classifier
+  --model     Name of model file to test
+  --target    Target label
+  --output    Path to file with predictions
 ```
 You can combine training and evaluation in one run. You also can use `--nthreads` option to control concurrency level (uses all cpu cores by default).
 
@@ -67,7 +74,7 @@ Our code (multithreaded, 8 logical cores):
 | 32    | 12    | 41           | 0.071294  | 0.152384 |
 | 32    | 16    | 89           | 0.002887  | 0.183245 |
 
-LightGBM results:
+LightGBM:
 
 | Trees | Depth | Time elapsed | Train MSE | Test MSE |
 |-------|-------|--------------|-----------|----------|
@@ -76,7 +83,7 @@ LightGBM results:
 | 32    | 12    | 7            | 0.092     | 0.176716 |
 | 32    | 16    | 50           | 0.045     | 0.229672 |
 
-XGBoost results:
+XGBoost:
 
 | Trees | Depth | Time elapsed | Train MSE | Test MSE |
 |-------|-------|--------------|-----------|----------|
