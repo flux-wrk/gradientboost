@@ -3,27 +3,31 @@
 namespace NGradientBoost {
 
     BoostedClassifier& BoostedClassifier::Fit(const Dataset& data, const Target& target) {
-        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+        auto begin_ts = std::chrono::high_resolution_clock::now();
 
         auto dataframe = DataFrame(data);
         trees_.clear();
-        std::vector<float_t> current_predictions(dataframe.size(), 0), temp_predictions(dataframe.size(), 0);
+        std::vector<float_t> current_approximation(dataframe.size(), 0.0f), next_approximation(dataframe.size(), 0);
 
         for (size_t iteration = 0; iteration < tree_count_; ++iteration) {
-
             DecisionTree weak_classifier(tree_depth_);
-            weak_classifier.Fit(dataframe, target, current_predictions, temp_predictions);
+            weak_classifier.Fit(dataframe, target, current_approximation, next_approximation);
 
-            current_predictions = temp_predictions;
-            float_t loss = BoostedClassifier::MSE(target, temp_predictions);
+            for (size_t i = 0; i < dataframe.size(); ++i) {
+                current_approximation[i] += learning_rate_ * next_approximation[i];
+            }
+
+            float_t loss = BoostedClassifier::MSE(target, current_approximation);
             std::cout << "Loss on iteration " << (iteration + 1) << " : " << loss << std::endl;
 
             trees_.push_back(weak_classifier);
         }
-        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() / 1000.f;
-        std::cout << "\nFitting complete, time elapsed: " << duration << " seconds (" << duration / tree_count_ << " per tree)\n";
+        auto end_ts = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_ts - begin_ts).count() / 1000.f;
 
+        std::cout << std::endl;
+        std::cout << "Fitting finished, time elapsed: " << duration << " seconds (" << duration / tree_count_
+                  << " per tree)\n";
         return *this;
     }
 
@@ -33,12 +37,11 @@ namespace NGradientBoost {
         for (const DecisionTree& weak_clf : trees_) {
             std::vector<float_t> predictions_for_tree = weak_clf.Predict(data);
             for (size_t i = 0; i < predictions.size(); ++i) {
-                predictions[i] += predictions_for_tree[i];
+                predictions[i] += learning_rate_ * predictions_for_tree[i];
             }
         }
         return predictions;
     }
-
 
     bool BoostedClassifier::Save(std::ostream& stream) const {
         stream << tree_depth_ << " " << tree_count_ << " " << learning_rate_ << std::endl;

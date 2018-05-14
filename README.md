@@ -49,3 +49,40 @@ Benchmark was done on [following](https://support.apple.com/kb/sp719?locale=en_U
 
 #### Higgs Boson ([kaggle](https://www.kaggle.com/c/higgs-boson/data)) 
 
+Our code:
+
+| Trees | Depth | Time elapsed | Train MSE | Test MSE |
+|-------|-------|--------------|-----------|----------|
+| 32    | 4     | 22           | 0.139818  | 0.101234 |
+| 32    | 8     | 61           | 0.112873  | 0.112387 |
+| 32    | 12    | 109          | 0.071294  | 0.152384 |
+| 32    | 16    | 220          | 0.002887  | 0.183245 |
+
+Our code (multithreaded, 8 logical cores):
+
+| Trees | Depth | Time elapsed | Train MSE | Test MSE |
+|-------|-------|--------------|-----------|----------|
+| 32    | 4     | 8            | 0.139818  | 0.101234 |
+| 32    | 8     | 22           | 0.112873  | 0.112387 |
+| 32    | 12    | 41           | 0.071294  | 0.152384 |
+| 32    | 16    | 89           | 0.002887  | 0.183245 |
+
+LightGBM results:
+
+| Trees | Depth | Time elapsed | Train MSE | Test MSE |
+|-------|-------|--------------|-----------|----------|
+| 32    | 4     | 0.28         | 0.117     | 0.107443 |
+| 32    | 8     | 1            | 0.104     | 0.110843 |
+| 32    | 12    | 7            | 0.092     | 0.176716 |
+| 32    | 16    | 50           | 0.045     | 0.229672 |
+
+XGBoost results:
+
+| Trees | Depth | Time elapsed | Train MSE | Test MSE |
+|-------|-------|--------------|-----------|----------|
+| 32    | 4     | 6            | 0.120089  | 0.121364 |
+| 32    | 8     | 21           | 0.082569  | 0.199075 |
+| 32    | 12    | 34           | 0.039824  | 0.237417 |
+| 32    | 16    | 66           | 0.000378  | 0.254394 |
+
+TODO: CatBoost benchmark

@@ -4,7 +4,7 @@ namespace NGradientBoost {
 
     DecisionTree::DecisionTree(size_t depth) : depth_(depth) {
         splitting_features_ = std::vector<size_t>();
-        leaf_answers_ = std::vector<float_t>(1ul << depth_, 0.0);
+        leaf_results_ = std::vector<float_t>(1ul << depth_, 0.0);
     }
 
     void DecisionTree::Save(std::ostream& stream) const {
@@ -12,7 +12,7 @@ namespace NGradientBoost {
         for (auto feature : splitting_features_) {
             stream << feature << " ";
         }
-        for (const auto& answer : leaf_answers_) {
+        for (const auto& answer : leaf_results_) {
             stream << answer << " ";
         }
         stream << std::endl;
@@ -26,9 +26,9 @@ namespace NGradientBoost {
             stream >> splitting_features_[i];
         }
 
-        leaf_answers_.resize(1ul << depth_);
+        leaf_results_.resize(1ul << depth_);
         for (size_t i = 0; i < (1ul << depth_); ++i) {
-            stream >> leaf_answers_[i];
+            stream >> leaf_results_[i];
         }
     }
 
@@ -40,14 +40,14 @@ namespace NGradientBoost {
             for (size_t j = 0; j < depth_; ++j) {
                 mask += (dataframe[i][splitting_features_[j]] << (depth_ - j - 1));
             }
-            res[i] = leaf_answers_[mask];
+            res[i] = leaf_results_[mask];
         }
         return res;
     }
 
     void DecisionTree::Fit(const DataFrame& dataframe,
                            const Target& target,
-                           Target& current_predictions,
+                           const Target& baseline_predictions,
                            Target& temp_predictions) {
         std::vector<int> leaf_indices(dataframe.size(), 0);
         tbb::mutex locker;
@@ -66,13 +66,13 @@ namespace NGradientBoost {
                 std::vector<int> temp_leaf_ind(dataframe.size(), 0), leaf_count(layer_width, 0);
                 std::vector<float_t> leaf_ans(layer_width, 0.0f), leaf_sum(layer_width, 0.0f);
 
-                if (used_features.count(feature_index / dataframe.get_bin_count()) > 0) {
+                if (used_features.count(feature_index / dataframe.slot_count()) > 0) {
                     return;
                 }
 
                 for (size_t i = 0; i < dataframe.size(); ++i) {
                     temp_leaf_ind[i] = leaf_indices[i] * 2 + dataframe[i][feature_index];
-                    leaf_sum[temp_leaf_ind[i]] += target[i] - current_predictions[i];
+                    leaf_sum[temp_leaf_ind[i]] += target[i] - baseline_predictions[i];
                     ++leaf_count[temp_leaf_ind[i]];
                 }
 
@@ -87,22 +87,23 @@ namespace NGradientBoost {
                     if (current_mse < chosen_mse) {
                         chosen_mse = current_mse;
                         chosen_feature = feature_index;
+                        chosen_leaf_count.swap(leaf_count);
                         chosen_leaf_ans.swap(leaf_ans);
                         chosen_leaf_ind.swap(temp_leaf_ind);
                         chosen_leaf_sum.swap(leaf_sum);
-                        chosen_leaf_count.swap(leaf_count);
                     }
                 }
             });
 
             splitting_features_.push_back(chosen_feature);
-            leaf_answers_ = chosen_leaf_ans;
-            used_features.insert(chosen_feature / dataframe.get_bin_count());
-            leaf_indices = chosen_leaf_ind;
+            used_features.insert(chosen_feature / dataframe.slot_count());
 
-            for (size_t i = 0; i < dataframe.size(); ++i) {
-                temp_predictions[i] = current_predictions[i] + chosen_leaf_ans[chosen_leaf_ind[i]];
-            }
+            leaf_results_.swap(chosen_leaf_ans);
+            leaf_indices.swap(chosen_leaf_ind);
+        }
+
+        for (size_t i = 0; i < dataframe.size(); ++i) {
+            temp_predictions[i] = leaf_results_[leaf_indices[i]];
         }
     }
 

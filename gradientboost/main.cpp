@@ -68,13 +68,14 @@ int main(int argc, char* argv[]) {
     CLI::App* fit = app.add_subcommand("fit", "Trains model on given dataset");
     std::string train_dataset_file, train_target_label = "Label", model_file;
     size_t tree_depth = 4, trees_count = 16;
-    float_t learning_rate = 1.0f;
+    float_t learning_rate = 0.1f;
 
     fit->add_option("--data", train_dataset_file, "Dataset file to train on")->required()->check(CLI::ExistingFile);
     fit->add_option("--target", train_target_label, "Target label")->required();
     fit->add_option("--trees", trees_count, "Number of trees in ensemble");
     fit->add_option("--depth", tree_depth, "Depth of each tree");
     fit->add_option("--model", model_file, "Name of saved model file")->required();
+    fit->add_option("--lr", learning_rate, "Learning rate of training procedure");
 
     fit->set_callback([&]() {
         tbb::task_scheduler_init scheduler(num_threads);
@@ -130,7 +131,7 @@ int main(int argc, char* argv[]) {
     predict->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
     predict->add_option("--target", target_pred_label , "Target label")->required();
     predict->add_option("--output", output_csv, "Output csv path")->required();
-/*
+
     predict->set_callback([&]() {
         tbb::task_scheduler_init scheduler(num_threads);
         std::cout << "Called predict" << std::endl;
@@ -149,7 +150,6 @@ int main(int argc, char* argv[]) {
         }
         std::cout << "Predicted! " << std::endl;
     });
-*/
     app.require_subcommand();
 
     std::cout.precision(5);
