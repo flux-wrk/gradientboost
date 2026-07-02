@@ -1,8 +1,6 @@
-include_directories(${CMAKE_SOURCE_DIR})
-
 add_library(loader STATIC
         CSV.h
         CSV.cpp
     )
 
-target_link_libraries(loader tbb)
+target_include_directories(loader PUBLIC ${CMAKE_SOURCE_DIR})

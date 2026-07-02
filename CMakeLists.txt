@@ -1,15 +1,34 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 4.0)
 
-# set(CMAKE_BUILD_TYPE Debug)
+project(gradientboost LANGUAGES CXX VERSION 1.0.0)
 
-project(gradientboost)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(CMakeConfig.txt)
+# Compile options
+add_compile_options(-Wall -Wextra -Werror -Wno-unused-parameter -Wno-missing-field-initializers)
 
-# 3D-Party
-set(3D_PARTY_DIR ${CMAKE_SOURCE_DIR}/3d-party)
-add_subdirectory(${3D_PARTY_DIR})
+# Release optimizations
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
-# library itself
-add_subdirectory(gradientboost)
+# GCC-specific LTO
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(-march=native -flto)
+endif()
+
+# Fetch CLI11 v2.6.2
+include(FetchContent)
+FetchContent_Declare(
+    cli11_proj
+    QUIET
+    GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+    GIT_TAG v2.6.2
+)
+FetchContent_MakeAvailable(cli11_proj)
+
+# Library modules
 add_subdirectory(lib)
+
+# Executable
+add_subdirectory(gradientboost)

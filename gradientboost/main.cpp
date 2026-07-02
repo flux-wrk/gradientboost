@@ -4,7 +4,6 @@
 #include "lib/preprocessing/Preprocessor.h"
 #include "lib/boosting/BoostedClassifier.h"
 #include "CLI/CLI.hpp"
-#include "tbb/task_scheduler_init.h"
 
 using namespace NGradientBoost;
 
@@ -62,8 +61,6 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<BoostedClassifier> classifier;
 
     CLI::App app{"Gradient boosting trainer."};
-    int num_threads = -1;
-    app.add_option("--nthreads", num_threads, "Number of threads to use");
 
     CLI::App* fit = app.add_subcommand("fit", "Trains model on given dataset");
     std::string train_dataset_file, train_target_label = "Label", model_file;
@@ -77,8 +74,7 @@ int main(int argc, char* argv[]) {
     fit->add_option("--model", model_file, "Name of saved model file")->required();
     fit->add_option("--lr", learning_rate, "Learning rate of training procedure");
 
-    fit->set_callback([&]() {
-        tbb::task_scheduler_init scheduler(num_threads);
+    fit->callback([&]() {
         std::cout << "Called fit on " << train_dataset_file << ", loading data: ";
 
         Dataset train_features;
@@ -108,8 +104,7 @@ int main(int argc, char* argv[]) {
     eval->add_option("--target", target_test_label, "Target label")->required();
     eval->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
 
-    eval->set_callback([&]() {
-        tbb::task_scheduler_init scheduler(num_threads);
+    eval->callback([&]() {
         std::cout << "Called eval" << std::endl;
 
         Dataset test_features;
@@ -132,8 +127,7 @@ int main(int argc, char* argv[]) {
     predict->add_option("--target", target_pred_label , "Target label")->required();
     predict->add_option("--output", output_csv, "Output csv path")->required();
 
-    predict->set_callback([&]() {
-        tbb::task_scheduler_init scheduler(num_threads);
+    predict->callback([&]() {
         std::cout << "Called predict" << std::endl;
 
         Dataset test_features = LoadDataset(predict_dataset_file);

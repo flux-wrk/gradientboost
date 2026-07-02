@@ -50,7 +50,7 @@ namespace NGradientBoost {
                            const Target& baseline_predictions,
                            Target& temp_predictions) {
         std::vector<int> leaf_indices(dataframe.size(), 0);
-        tbb::mutex locker;
+        std::mutex locker;
 
         for (size_t depth = 1; depth <= depth_; ++depth) {
             size_t layer_width = 1ul << depth;
@@ -62,12 +62,12 @@ namespace NGradientBoost {
             std::vector<float_t> chosen_leaf_sum;
             std::vector<int> chosen_leaf_count;
 
-            tbb::parallel_for(size_t(0), dataframe.features_count(), size_t(1), [&](size_t feature_index) {
+            for (size_t feature_index = 0; feature_index < dataframe.features_count(); ++feature_index) {
                 std::vector<int> temp_leaf_ind(dataframe.size(), 0), leaf_count(layer_width, 0);
                 std::vector<float_t> leaf_ans(layer_width, 0.0f), leaf_sum(layer_width, 0.0f);
 
                 if (used_features.count(feature_index / dataframe.slot_count()) > 0) {
-                    return;
+                    continue;
                 }
 
                 for (size_t i = 0; i < dataframe.size(); ++i) {
@@ -83,7 +83,7 @@ namespace NGradientBoost {
                 }
 
                 {
-                    tbb::mutex::scoped_lock lock(locker);
+                    std::lock_guard<std::mutex> lock(locker);
                     if (current_mse < chosen_mse) {
                         chosen_mse = current_mse;
                         chosen_feature = feature_index;
@@ -93,7 +93,7 @@ namespace NGradientBoost {
                         chosen_leaf_sum.swap(leaf_sum);
                     }
                 }
-            });
+            }
 
             splitting_features_.push_back(chosen_feature);
             used_features.insert(chosen_feature / dataframe.slot_count());

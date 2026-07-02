@@ -9,7 +9,7 @@
 #include <utility>
 #include <cfloat>
 #include <limits>
-#include "tbb/parallel_sort.h"
+#include <algorithm>
 
 namespace NGradientBoost {
 
@@ -40,7 +40,7 @@ namespace NGradientBoost {
                     feature_values[sample_idx] = data_[sample_idx][feature_idx];
                 }
 
-                tbb::parallel_sort(std::begin(feature_values), std::end(feature_values));
+                std::sort(std::begin(feature_values), std::end(feature_values));
 
                 for (size_t bin_idx = 0; bin_idx < SLOT_COUNT - 1; ++bin_idx) {
                     thresholds_[feature_idx][bin_idx] = feature_values[(bin_idx + 1) * data_.size() / SLOT_COUNT];

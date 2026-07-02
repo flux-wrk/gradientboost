@@ -1,11 +1,10 @@
-include_directories(${CMAKE_SOURCE_DIR})
-
 add_library(boosting STATIC
         BoostedClassifier.cpp
         BoostedClassifier.h
         )
 
+target_include_directories(boosting PUBLIC ${CMAKE_SOURCE_DIR})
+
 target_link_libraries(boosting
-        tbb
-        decision_tree
-        m)
+        PUBLIC decision_tree
+        PRIVATE m)

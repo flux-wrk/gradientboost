@@ -9,9 +9,9 @@
 #include <cmath>
 
 #include "lib/preprocessing/DataFrame.h"
-#include "tbb/mutex.h"
-#include "tbb/parallel_for.h"
-#include "tbb/blocked_range.h"
+#include <mutex>
+#include <thread>
+#include <atomic>
 
 namespace NGradientBoost {
 

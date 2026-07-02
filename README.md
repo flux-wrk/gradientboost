@@ -1,52 +1,73 @@
 ## GradientBoost
-Gradient boosting library for YSDA LSML course project. 
+
+Gradient boosting library for YSDA LSML course project.
+
+### Requirements
+
+- **CMake 4.0+**
+- **C++17 compiler** (tested with AppleClang 21, GCC)
+- **Git** (for FetchContent to download CLI11)
 
 ### Building
-Clone this repository, then build it using cmake:
+
+Clone this repository, then build it using CMake:
+
 ```bash
 git clone https://github.com/flux-wrk/gradientboost.git
 cd gradientboost
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j8 gradientboost
+cmake --build . -j8
 ```
+
+> **Note:** CLI11 v2.6.2 is automatically fetched via CMake FetchContent on first build.
 
 ### Running
-Program currently have two modes - fit and eval.
-Sample command line:
-```bash
-./gradientboost fit
-  --data 		Dataset file to train on
-  --target 		Target label (name of column in csv file)
-  --trees 		Number of trees in ensemble (default - 16)
-  --depth 		Depth of each tree (default - 4)
-  --model 		Name of saved model file
-  --lr        Learning rate of boosting process
 
-./gradientboost eval
-  --data      Model file for a classifier
-  --target    Target label
-  --model     Name of model file to test (if no model given, assuming evaluation of model trained in 'fit' subcommand)
-  
-./gradientboost predict
-  --data      Model file for a classifier
-  --model     Name of model file to test
-  --target    Target label
-  --output    Path to file with predictions
+The program supports three subcommands: `fit`, `eval`, and `predict`.
+
+```bash
+# Train a model
+./gradientboost fit \
+  --data <dataset.csv> \
+  --target <label_column> \
+  --trees 16 \
+  --depth 4 \
+  --model <model_file> \
+  --lr 0.1
+
+# Evaluate model
+./gradientboost eval \
+  --data <dataset.csv> \
+  --target <label_column> \
+  --model <model_file>
+
+# Predict on new data
+./gradientboost predict \
+  --data <dataset.csv> \
+  --model <model_file> \
+  --target <label_column> \
+  --output <predictions.csv>
 ```
-You can combine training and evaluation in one run. You also can use `--nthreads` option to control concurrency level (uses all cpu cores by default).
+
+You can combine training and evaluation in a single run (fit then eval without `--model`).
 
 ### Implementation details
-This library (obviously) implements gradient boosting over decision trees. In current implementation we use oblivious decision trees with histograms for "fast" training.
-Current code is tested with Higgs dataset.
 
-### TODO:
-- [x] Split implementation of decision tree and gradient boosting itself
+This library implements gradient boosting over oblivious decision trees with histogram-based binning for fast training. Key features:
+
+- **CMake 4.0** with modern target-based configuration
+- **Native C++ concurrency** (`std::mutex`, `std::sort`) — no external threading library required
+- **CLI11 v2.6.2** fetched automatically via CMake FetchContent
+- **Oblivious decision trees** with configurable depth
+- **Histogram-based feature binning** (16 bins per feature) for efficient split finding
+- Model serialization/deserialization
+
+### TODO
+
 - [ ] Implement custom loss functions
-- [x] Test library with popular datasets
-- [x] Introduce multithreaded training
-- [x] Code quality improvements
-- [x] Performance comparison with industrial solutions
+- [ ] Add regression/classification mode selection
+- [ ] Add early stopping support
 
 ### Benchmark results
 
@@ -54,7 +75,7 @@ Benchmark was done on [following](https://support.apple.com/kb/sp719?locale=en_U
 - 2.8 - 4.0 GHz quad-core Intel Core i7 CPU, 6MB L3 cache.
 - 16GB of 1600MHz DDR3L memory.
 
-#### Higgs Boson ([kaggle](https://www.kaggle.com/c/higgs-boson/data)) 
+#### Higgs Boson ([kaggle](https://www.kaggle.com/c/higgs-boson/data))
 
 Our code:
 
@@ -64,15 +85,6 @@ Our code:
 | 32    | 8     | 61           | 0.112873  | 0.112387 |
 | 32    | 12    | 109          | 0.071294  | 0.152384 |
 | 32    | 16    | 220          | 0.002887  | 0.183245 |
-
-Our code (multithreaded, 8 logical cores):
-
-| Trees | Depth | Time elapsed | Train MSE | Test MSE |
-|-------|-------|--------------|-----------|----------|
-| 32    | 4     | 8            | 0.139818  | 0.101234 |
-| 32    | 8     | 22           | 0.112873  | 0.112387 |
-| 32    | 12    | 41           | 0.071294  | 0.152384 |
-| 32    | 16    | 89           | 0.002887  | 0.183245 |
 
 LightGBM:
 
@@ -91,5 +103,3 @@ XGBoost:
 | 32    | 8     | 21           | 0.082569  | 0.199075 |
 | 32    | 12    | 34           | 0.039824  | 0.237417 |
 | 32    | 16    | 66           | 0.000378  | 0.254394 |
-
-TODO: CatBoost benchmark

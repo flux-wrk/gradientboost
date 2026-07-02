@@ -9,9 +9,6 @@
 
 #include "lib/decision_tree/Tree.h"
 #include "lib/preprocessing/DataFrame.h"
-#include "tbb/mutex.h"
-#include "tbb/parallel_for.h"
-#include "tbb/blocked_range.h"
 
 namespace NGradientBoost {
 
