@@ -1,17 +1,13 @@
 #pragma once
 
-#include <random>
 #include <vector>
 #include <string>
-#include <fstream>
-#include <sstream>
 #include <algorithm>
-#include <utility>
-#include <cfloat>
 #include <limits>
-#include <algorithm>
 
 namespace NGradientBoost {
+
+    using float_t = float;
 
     using Feature = float_t;
     using Sample = std::vector<Feature>;
@@ -20,19 +16,20 @@ namespace NGradientBoost {
     using Label = float_t;
     using Target = std::vector<Label>;
 
+    inline constexpr size_t SLOT_COUNT = 16;
+
     class DataFrame {
     public:
         DataFrame() = default;
 
-        explicit DataFrame(const Dataset& data) {
-            this->data_ = data;
-            num_features_ = data[0].size();
+        explicit DataFrame(const Dataset& data)
+            : data_(data), num_features_(data[0].size()) {
             DistributeToSlots();
         }
 
         void DistributeToSlots() {
             binary_data_ = std::vector<std::vector<bool>>(data_.size(), std::vector<bool>(SLOT_COUNT * num_features_));
-            thresholds_ = std::vector<std::vector<float_t>>(num_features_, std::vector<float_t >(SLOT_COUNT));
+            thresholds_ = std::vector<std::vector<float_t>>(num_features_, std::vector<float_t>(SLOT_COUNT));
 
             for (size_t feature_idx = 0; feature_idx < num_features_; ++feature_idx) {
                 std::vector<Feature> feature_values(data_.size());
@@ -57,28 +54,20 @@ namespace NGradientBoost {
             }
         }
 
-        size_t slot_count() const {
-            return SLOT_COUNT;
-        }
+        [[nodiscard]] size_t slot_count() const noexcept { return SLOT_COUNT; }
+        [[nodiscard]] size_t size() const noexcept { return binary_data_.size(); }
 
-        size_t size() const {
-            return binary_data_.size();
-        }
-
-        const std::vector<bool>& operator[](int index) const {
+        const std::vector<bool>& operator[](size_t index) const {
             return binary_data_[index];
         }
 
-        size_t features_count() const {
-            return num_features_ * SLOT_COUNT;
-        }
+        [[nodiscard]] size_t features_count() const noexcept { return num_features_ * SLOT_COUNT; }
 
     private:
         Dataset data_;
         std::vector<std::vector<bool>> binary_data_;
         std::vector<std::vector<float_t>> thresholds_;
         size_t num_features_{};
-        const size_t SLOT_COUNT = 16;
     };
 
 } // namespace NGradientBoost

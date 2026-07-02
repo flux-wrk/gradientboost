@@ -1,10 +1,11 @@
 #pragma once
 
-#include <iostream>
 #include <string>
 #include <vector>
-#include <cfloat>
-#include <cmath>
+#include <istream>
+#include <ostream>
+
+#include "lib/preprocessing/DataFrame.h"
 
 namespace NGradientBoost {
 
