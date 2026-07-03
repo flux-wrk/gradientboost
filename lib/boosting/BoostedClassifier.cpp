@@ -7,7 +7,8 @@ namespace NGradientBoost {
 
         auto dataframe = DataFrame(data);
         trees_.clear();
-        std::vector<float_t> current_approximation(dataframe.size(), 0.0f), next_approximation(dataframe.size(), 0);
+        std::vector<float_t> current_approximation(dataframe.size(), 0.0f);
+        std::vector<float_t> next_approximation(dataframe.size(), 0.0f);
 
         for (size_t iteration = 0; iteration < tree_count_; ++iteration) {
             DecisionTree weak_classifier(tree_depth_);
@@ -31,11 +32,11 @@ namespace NGradientBoost {
         return *this;
     }
 
-    std::vector<float_t> BoostedClassifier::Predict(const std::vector<std::vector<float_t>>& data) const {
+    Target BoostedClassifier::Predict(const Dataset& data) const {
         auto dataframe = DataFrame(data);
-        std::vector<float_t> predictions(dataframe.size());
+        std::vector<float_t> predictions(dataframe.size(), 0.0f);
         for (const DecisionTree& weak_clf : trees_) {
-            std::vector<float_t> predictions_for_tree = weak_clf.Predict(data);
+            std::vector<float_t> predictions_for_tree = weak_clf.Predict(dataframe);
             for (size_t i = 0; i < predictions.size(); ++i) {
                 predictions[i] += learning_rate_ * predictions_for_tree[i];
             }
@@ -62,7 +63,7 @@ namespace NGradientBoost {
         return BoostedClassifier::MSE(Predict(data), target);
     }
 
-    inline float_t sqr(float_t x) { return x * x; }
+    inline float_t sqr(float_t x) noexcept { return x * x; }
 
     float_t BoostedClassifier::MSE(const Target& predicted, const Target& actual) {
         assert(predicted.size() == actual.size());

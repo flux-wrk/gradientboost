@@ -1,17 +1,12 @@
 #pragma once
+
 #include <vector>
-#include <string>
 #include <set>
 #include <limits>
 #include <fstream>
 #include <iostream>
-#include <cfloat>
-#include <cmath>
 
 #include "lib/preprocessing/DataFrame.h"
-#include <mutex>
-#include <thread>
-#include <atomic>
 
 namespace NGradientBoost {
 
@@ -25,12 +20,11 @@ namespace NGradientBoost {
         explicit DecisionTree(std::istream& stream);
 
         void Save(std::ostream& stream) const;
-        std::vector<float_t> Predict(const std::vector<std::vector<float_t>>& data) const;
+        std::vector<float_t> Predict(const DataFrame& dataframe) const;
         void Fit(const DataFrame& dataframe,
                  const Target& target,
                  const Target& baseline_predictions,
                  Target& temp_predictions);
-
     };
 
 } // namespace NGradientBoost

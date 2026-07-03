@@ -1,11 +1,9 @@
 #include "CSV.h"
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <tuple>
 
 namespace NGradientBoost {
 
@@ -23,19 +21,19 @@ namespace NGradientBoost {
 
             // TODO: handle escape codes
             while (std::getline(lineStream, cell, separator)) {
-                current_vector.push_back(cell);
+                current_vector.push_back(std::move(cell));
             }
 
             last_vector_size = current_vector.size();
             if (has_header) {
-                header = current_vector;
+                header = std::move(current_vector);
                 has_header = false;
             } else {
-                result.emplace_back(current_vector);
+                result.emplace_back(std::move(current_vector));
             }
         }
 
-        return {result, header};
+        return {std::move(result), std::move(header)};
     }
 
     std::pair<StringMatrix, StringVector> ReadCSV(const std::string& file, char separator, bool skip_header) {
@@ -50,7 +48,7 @@ namespace NGradientBoost {
         if (!header.empty()) {
             stream << header << "\n";
         }
-        for (const auto value: values) {
+        for (const auto value : values) {
             stream << value << "\n";
         }
     }

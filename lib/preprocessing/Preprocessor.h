@@ -1,15 +1,11 @@
 #pragma once
 
-#include <iostream>
 #include <string>
 #include <vector>
-#include <cfloat>
-#include <cmath>
-#include <algorithm>
-#include <memory>
-
 #include <set>
 #include <map>
+
+#include "DataFrame.h"
 
 namespace NGradientBoost {
     template<typename TInput, typename TOutput>

@@ -2,10 +2,8 @@
 
 namespace NGradientBoost {
 
-    DecisionTree::DecisionTree(size_t depth) : depth_(depth) {
-        splitting_features_ = std::vector<size_t>();
-        leaf_results_ = std::vector<float_t>(1ul << depth_, 0.0);
-    }
+    DecisionTree::DecisionTree(size_t depth)
+        : depth_(depth), leaf_results_(1ul << depth_, 0.0f) {}
 
     void DecisionTree::Save(std::ostream& stream) const {
         stream << depth_ << " ";
@@ -32,8 +30,7 @@ namespace NGradientBoost {
         }
     }
 
-    std::vector<float_t> DecisionTree::Predict(const std::vector<std::vector<float_t>>& data) const {
-        auto dataframe = DataFrame(data);
+    std::vector<float_t> DecisionTree::Predict(const DataFrame& dataframe) const {
         std::vector<float_t> res(dataframe.size());
         for (size_t i = 0; i < dataframe.size(); ++i) {
             size_t mask = 0;
@@ -50,7 +47,6 @@ namespace NGradientBoost {
                            const Target& baseline_predictions,
                            Target& temp_predictions) {
         std::vector<int> leaf_indices(dataframe.size(), 0);
-        std::mutex locker;
 
         for (size_t depth = 1; depth <= depth_; ++depth) {
             size_t layer_width = 1ul << depth;
@@ -82,16 +78,13 @@ namespace NGradientBoost {
                     current_mse += leaf_ans[i] * (leaf_count[i] * leaf_ans[i] - 2 * leaf_sum[i]);
                 }
 
-                {
-                    std::lock_guard<std::mutex> lock(locker);
-                    if (current_mse < chosen_mse) {
-                        chosen_mse = current_mse;
-                        chosen_feature = feature_index;
-                        chosen_leaf_count.swap(leaf_count);
-                        chosen_leaf_ans.swap(leaf_ans);
-                        chosen_leaf_ind.swap(temp_leaf_ind);
-                        chosen_leaf_sum.swap(leaf_sum);
-                    }
+                if (current_mse < chosen_mse) {
+                    chosen_mse = current_mse;
+                    chosen_feature = feature_index;
+                    chosen_leaf_count.swap(leaf_count);
+                    chosen_leaf_ans.swap(leaf_ans);
+                    chosen_leaf_ind.swap(temp_leaf_ind);
+                    chosen_leaf_sum.swap(leaf_sum);
                 }
             }
 
@@ -107,4 +100,4 @@ namespace NGradientBoost {
         }
     }
 
-} //namespace NGradientBoost
+} // namespace NGradientBoost

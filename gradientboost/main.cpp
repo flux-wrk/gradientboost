@@ -1,5 +1,8 @@
 #include <memory>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
+
 #include "lib/loader/CSV.h"
 #include "lib/preprocessing/Preprocessor.h"
 #include "lib/boosting/BoostedClassifier.h"
@@ -8,18 +11,17 @@
 using namespace NGradientBoost;
 
 std::pair<Dataset, Target> LoadDataset(const std::string& file_name, const std::string& target_column) {
-    StringMatrix string_frame;
-    StringVector csv_header;
-    std::tie(string_frame, csv_header) = NGradientBoost::ReadCSV(file_name);
+    auto [string_frame, csv_header] = NGradientBoost::ReadCSV(file_name);
 
     auto header_position = std::find(std::cbegin(csv_header), std::cend(csv_header), target_column);
-    size_t target_index = (header_position == std::cend(csv_header)) ? 0 : header_position - std::cbegin(csv_header);
+    size_t target_index = (header_position == std::cend(csv_header)) ? 0
+                                                                    : static_cast<size_t>(header_position - std::cbegin(csv_header));
 
     Target train_target;
     Dataset train_features;
 
-    NGradientBoost::CategorialEncoder<std::string> label_encoder;
-    NGradientBoost::ToFloat features_encoder;
+    CategorialEncoder<std::string> label_encoder;
+    ToFloat features_encoder;
 
     label_encoder.Fit(string_frame, target_index);
 
@@ -31,27 +33,25 @@ std::pair<Dataset, Target> LoadDataset(const std::string& file_name, const std::
             }
         }
 
-        train_features.emplace_back(feature_vec);
+        train_features.emplace_back(std::move(feature_vec));
         label_encoder.Transform(row[target_index], train_target);
     }
 
-    return {train_features, train_target};
+    return {std::move(train_features), std::move(train_target)};
 }
 
 Dataset LoadDataset(const std::string& file_name) {
-    StringMatrix string_frame;
-    StringVector csv_header;
-    std::tie(string_frame, csv_header) = NGradientBoost::ReadCSV(file_name);
+    auto [string_frame, csv_header] = NGradientBoost::ReadCSV(file_name);
 
     Dataset features;
-    NGradientBoost::ToFloat features_encoder;
+    ToFloat features_encoder;
 
     for (const auto& row : string_frame) {
         std::vector<float_t> feature_vec;
-        for (size_t i = 0; i < row.size(); ++i) {
-            features_encoder.Transform(row[i], feature_vec);
+        for (const auto& cell : row) {
+            features_encoder.Transform(cell, feature_vec);
         }
-        features.emplace_back(feature_vec);
+        features.emplace_back(std::move(feature_vec));
     }
 
     return features;
@@ -77,13 +77,13 @@ int main(int argc, char* argv[]) {
     fit->callback([&]() {
         std::cout << "Called fit on " << train_dataset_file << ", loading data: ";
 
-        Dataset train_features;
-        Target train_target;
-        std::tie(train_features, train_target) = LoadDataset(train_dataset_file, train_target_label);
+        auto [train_features, train_target] = LoadDataset(train_dataset_file, train_target_label);
         std::cout << train_target.size() << " rows" << std::endl;
-        int a=0, b=0;
-        for (float_t label: train_target) {
-            if(label == 0.0) ++a; else if (label==1.0) ++b; else std::cout <<  "err\n";
+        int a = 0, b = 0;
+        for (float_t label : train_target) {
+            if (label == 0.0f) ++a;
+            else if (label == 1.0f) ++b;
+            else std::cout << "err\n";
         }
         std::cout << a << " " << b << "\n";
 
@@ -107,11 +107,9 @@ int main(int argc, char* argv[]) {
     eval->callback([&]() {
         std::cout << "Called eval" << std::endl;
 
-        Dataset test_features;
-        Target test_target;
-        std::tie(test_features, test_target) = LoadDataset(test_dataset_file, target_test_label);
+        auto [test_features, test_target] = LoadDataset(test_dataset_file, target_test_label);
 
-        if (!classifier) { // classifier is not fitted with "fit" subcommand
+        if (!classifier) {
             std::ifstream stream(model_file);
             classifier = std::make_unique<BoostedClassifier>(stream);
         }
@@ -124,20 +122,20 @@ int main(int argc, char* argv[]) {
     std::string predict_dataset_file, target_pred_label = "Label", output_csv;
     predict->add_option("--data", predict_dataset_file, "Model file for a classifier")->required()->check(CLI::ExistingFile);
     predict->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
-    predict->add_option("--target", target_pred_label , "Target label")->required();
+    predict->add_option("--target", target_pred_label, "Target label")->required();
     predict->add_option("--output", output_csv, "Output csv path")->required();
 
     predict->callback([&]() {
         std::cout << "Called predict" << std::endl;
 
-        Dataset test_features = LoadDataset(predict_dataset_file);
+        auto test_features = LoadDataset(predict_dataset_file);
 
-        if (!classifier) { // classifier is not fitted with "fit" subcommand
+        if (!classifier) {
             std::ifstream stream(model_file);
             classifier = std::make_unique<BoostedClassifier>(stream);
         }
 
-        Target predicted = classifier->Predict(test_features);
+        auto predicted = classifier->Predict(test_features);
         {
             std::ofstream stream(output_csv);
             WriteCSV(stream, predicted, target_pred_label);

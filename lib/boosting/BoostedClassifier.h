@@ -1,7 +1,6 @@
+#pragma once
+
 #include <vector>
-#include <string>
-#include <set>
-#include <limits>
 #include <fstream>
 #include <iostream>
 #include <chrono>
@@ -14,11 +13,9 @@ namespace NGradientBoost {
 
     class BoostedClassifier {
      public:
-        BoostedClassifier(size_t tree_count, size_t depth, float_t learning_rate) {
-            this->learning_rate_ = learning_rate;
-            this->tree_count_ = tree_count;
-            this->tree_depth_ = depth;
-        }
+        BoostedClassifier(size_t tree_count, size_t depth, float_t learning_rate)
+            : learning_rate_(learning_rate), tree_count_(tree_count), tree_depth_(depth) {}
+
         explicit BoostedClassifier(std::istream& stream);
 
         BoostedClassifier& Fit(const Dataset& data, const Target& target);
