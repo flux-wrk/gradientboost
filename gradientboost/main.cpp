@@ -1,12 +1,12 @@
-#include <memory>
 #include <algorithm>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <memory>
 
+#include "CLI/CLI.hpp"
+#include "lib/boosting/BoostedClassifier.h"
 #include "lib/loader/CSV.h"
 #include "lib/preprocessing/Preprocessor.h"
-#include "lib/boosting/BoostedClassifier.h"
-#include "CLI/CLI.hpp"
 
 using namespace NGradientBoost;
 
@@ -14,8 +14,8 @@ std::pair<Dataset, Target> LoadDataset(const std::string& file_name, const std::
     auto [string_frame, csv_header] = NGradientBoost::ReadCSV(file_name);
 
     auto header_position = std::find(std::cbegin(csv_header), std::cend(csv_header), target_column);
-    size_t target_index = (header_position == std::cend(csv_header)) ? 0
-                                                                    : static_cast<size_t>(header_position - std::cbegin(csv_header));
+    size_t target_index =
+        (header_position == std::cend(csv_header)) ? 0 : static_cast<size_t>(header_position - std::cbegin(csv_header));
 
     Target train_target;
     Dataset train_features;
@@ -81,9 +81,12 @@ int main(int argc, char* argv[]) {
         std::cout << train_target.size() << " rows" << std::endl;
         int a = 0, b = 0;
         for (float_t label : train_target) {
-            if (label == 0.0f) ++a;
-            else if (label == 1.0f) ++b;
-            else std::cout << "err\n";
+            if (label == 0.0f)
+                ++a;
+            else if (label == 1.0f)
+                ++b;
+            else
+                std::cout << "err\n";
         }
         std::cout << a << " " << b << "\n";
 
@@ -120,7 +123,9 @@ int main(int argc, char* argv[]) {
 
     CLI::App* predict = app.add_subcommand("predict", "Runs model inference on given dataset");
     std::string predict_dataset_file, target_pred_label = "Label", output_csv;
-    predict->add_option("--data", predict_dataset_file, "Model file for a classifier")->required()->check(CLI::ExistingFile);
+    predict->add_option("--data", predict_dataset_file, "Model file for a classifier")
+        ->required()
+        ->check(CLI::ExistingFile);
     predict->add_option("--model", model_file, "Name of model file to test")->check(CLI::ExistingFile);
     predict->add_option("--target", target_pred_label, "Target label")->required();
     predict->add_option("--output", output_csv, "Output csv path")->required();
